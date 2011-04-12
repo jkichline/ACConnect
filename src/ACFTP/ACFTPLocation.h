@@ -17,6 +17,7 @@
 @property (nonatomic, retain) NSString* username;
 @property (nonatomic, retain) NSString* password;
 @property (nonatomic, retain) NSURL* url;
+@property (readonly) int port;
 @property (readonly) NSString* host;
 @property (readonly) NSString* href;
 @property (readonly) NSURL* urlWithCredentials;

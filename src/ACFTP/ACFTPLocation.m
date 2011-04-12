@@ -88,7 +88,15 @@
 }
 
 -(NSString*)host {
-	return [NSString stringWithFormat:@"%@://%@", [self.url scheme], [self.url host]];
+	NSString* portString = @"";
+	if([self.url port] != nil) {
+		portString = [NSString stringWithFormat:@":%@", [self.url port]];
+	}
+	return [NSString stringWithFormat:@"%@://%@%@", [self.url scheme], [self.url host], portString];
+}
+
+-(int)port {
+	return [[self.url port] intValue];
 }
 
 -(NSString*)href {
