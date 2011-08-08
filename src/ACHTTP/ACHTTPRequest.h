@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ACHTTPRequestModifier.h"
 
 @class ACHTTPRequest;
 
@@ -33,6 +34,7 @@
 	id payload;
 	id result;
 	SEL action;
+	NSArray* modifiers;
 }
 
 @property (nonatomic, retain) NSURL* url;
@@ -45,6 +47,7 @@
 @property (nonatomic, retain) id payload;
 @property (nonatomic, retain) id result;
 @property (nonatomic, retain) id body;
+@property (nonatomic, retain) NSArray* modifiers;
 @property SEL action;
 
 -(BOOL)cancel;
@@ -52,9 +55,17 @@
 -(void)handleError:(NSError *)error;
 +(id)get:(id)url;
 +(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate;
++(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers;
 +(void)get:(id)url delegate: (id) delegate action:(SEL)action;
++(void)get:(id)url delegate: (id) delegate action:(SEL)action modifiers:(NSArray*)modifiers;
 +(void)post:(id)url data:(id)data delegate: (id<ACHTTPRequestDelegate>) delegate;
++(void)post:(id)url data:(id)data delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers;
 +(void)post:(id)url data:(id)data delegate: (id) delegate action:(SEL)action;
++(void)post:(id)url data:(id)data delegate: (id) delegate action:(SEL)action modifiers:(NSArray*)modifiers;
+
++(ACHTTPRequest*)request;
++(ACHTTPRequest*)requestWithDelegate:(id<ACHTTPRequestDelegate>)delegate;
++(ACHTTPRequest*)requestWithDelegate:(id)delegate action:(SEL)action;
 
 +(NSString*)convertDictionaryToParameters:(NSDictionary*)d;
 +(NSString*)convertDictionaryToParameters:(NSDictionary*)d separator:(NSString*)separator;

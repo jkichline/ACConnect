@@ -9,18 +9,38 @@
 #import "ACHTTPRequest.h"
 #import "ACHTTPReachability.h"
 #import "JSONKit.h"
+#import "XMLReader.h"
 
 @protocol ACHTTPRequestDelegate;
 
 @implementation ACHTTPRequest
 
-@synthesize action, response, result, body, payload, url, receivedData, delegate, username, password, connection = conn;
+@synthesize action, response, result, body, payload, url, receivedData, delegate, username, password, connection = conn, modifiers;
+
+#pragma mark - Initialization
 
 -(id)init{
 	if((self = [super init])) {
 		conn = nil;
 	}
 	return self;
+}
+
++(ACHTTPRequest*)request {
+	return [[[self alloc] init] autorelease];
+}
+
++(ACHTTPRequest*)requestWithDelegate:(id<ACHTTPRequestDelegate>)_delegate {
+	ACHTTPRequest* request = [[self alloc] init];
+	request.delegate = _delegate;
+	return [request autorelease];
+}
+
++(ACHTTPRequest*)requestWithDelegate:(id)_delegate action:(SEL)_action {
+	ACHTTPRequest* request = [[self alloc] init];
+	request.delegate = _delegate;
+	request.action = _action;
+	return [request autorelease];
 }
 
 // Sends the request via HTTP.
@@ -66,6 +86,15 @@
 		}
 	}
 	
+	// If we have any modifiers specified, run them
+	if(self.modifiers != nil) {
+		for(id modifier in self.modifiers) {
+			if([modifier conformsToProtocol:@protocol(ACHTTPRequestModifier)]) {
+				[modifier modifyRequest:request];
+			}
+		}
+	}
+	
 	// Create the connection
 	self.connection = [[NSURLConnection alloc] initWithRequest: request delegate: self];
 	if(self.connection) {
@@ -80,6 +109,8 @@
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)r {
 	self.response = (NSHTTPURLResponse*)r;
     [self.receivedData setLength:0];
+	
+	// Notify the delegate of progress
 	if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(httpRequest:updatedProgress:)]) {
 		[(NSObject*)self.delegate performSelector:@selector(httpRequest:updatedProgress:) withObject:self withObject:[NSNumber numberWithFloat:0]];
 	}
@@ -121,6 +152,8 @@
 		NSString* r = [[NSString alloc] initWithData: self.receivedData encoding: NSUTF8StringEncoding];
 		self.result = [r mutableObjectFromJSONString];
 		[r release];
+	} else if([mimetype hasPrefix:@"application/xml"] || [mimetype hasPrefix:@"text/xml"]) {
+		self.result = [XMLReader dictionaryForXMLData:self.receivedData error:nil];
 	} else if([mimetype hasPrefix:@"text/"]) {
 		NSString* r = [[NSString alloc] initWithData: self.receivedData encoding: NSUTF8StringEncoding];
 		if([r rangeOfString:@"http://www.apple.com/DTDs/PropertyList-1.0.dtd"].length > 0) {
@@ -189,7 +222,6 @@
 	NSData* resultData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 	
 	NSString* resultString = [[[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding] autorelease];
-	NSLog(@"Received Data: %@", resultString);
 	id resultOutput;
 	@try {
 		resultOutput = [resultString propertyList];
@@ -202,33 +234,53 @@
 	return resultOutput;
 }
 
-+(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate{
++(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate {
+	return [self get:url delegate:delegate modifiers:nil];
+}
+
++(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
+	wd.modifiers = modifiers;
 	[wd getUrl:url];
 	[wd release];
 }
 
-+(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate action:(SEL)action{
++(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate action:(SEL)action {
+	return [self get:url delegate:delegate action:action modifiers:nil];
+}
+
++(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate action:(SEL)action modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
 	wd.action = action;
+	wd.modifiers = modifiers;
 	[wd getUrl:url];
 	[wd release];
 }
 
 +(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate {
+	[self post:url data:data delegate:delegate modifiers:nil];
+}
+
++(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
 	wd.body = data;
+	wd.modifiers = modifiers;
 	[wd getUrl:url];
 	[wd release];
 }
 
 +(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action {
+	return [self post:url data:data delegate:delegate action:action modifiers:nil];
+}
+
++(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
 	wd.action = action;
+	wd.modifiers = modifiers;
 	wd.body = data;
 	[wd getUrl:url];
 	[wd release];
@@ -262,6 +314,7 @@
 	[receivedData release];
 	[url release];
 	[conn release];
+	[modifiers release];
 	[super dealloc];
 }
 
