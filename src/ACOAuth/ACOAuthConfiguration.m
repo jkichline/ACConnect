@@ -13,7 +13,7 @@
 
 @synthesize baseURL, requestTokenURL, accessTokenURL, authorizationURL, callbackURL;
 @synthesize consumerKey, consumerSecret, token, tokenSecret, verifier, signatureMethod;
-@synthesize identifier, tintColor, parentViewController, parameters;
+@synthesize identifier, tintColor, parentViewController, parameters, css, javascript;
 
 #pragma mark -
 #pragma mark Initialization
@@ -106,7 +106,7 @@
 		[keychain setObject:self.token forKey:(id)kSecAttrAccount];
 		[keychain setObject:self.tokenSecret forKey:(id)kSecValueData];
 		[keychain setObject:self.consumerKey forKey:(id)kSecAttrLabel];
-		[keychain setObject:self.baseURL forKey:(id)kSecAttrService];
+		[keychain setObject:[self.baseURL absoluteString] forKey:(id)kSecAttrService];
 	}
 }
 

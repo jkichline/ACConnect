@@ -27,6 +27,8 @@ typedef enum {
 	NSString* tokenSecret;
 	NSString* verifier;
 	NSString* identifier;
+	NSString* css;
+	NSString* javascript;
 	
 	NSMutableDictionary* parameters;
 	
@@ -49,6 +51,8 @@ typedef enum {
 @property (nonatomic, retain) NSString* tokenSecret;
 @property (nonatomic, retain) NSString* verifier;
 @property (nonatomic, retain) NSString* identifier;
+@property (nonatomic, retain) NSString* css;
+@property (nonatomic, retain) NSString* javascript;
 
 @property (nonatomic, retain) NSMutableDictionary* parameters;
 

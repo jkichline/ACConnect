@@ -245,7 +245,6 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 		}
 	}
 
-/*
 	NSMutableString* query = [NSMutableString string];
 	if([[request URL] query] != nil) {
 		[query appendString:[[request URL] query]];
@@ -258,15 +257,18 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 			[query appendFormat:@"%@=%@", [ACOAuthUtility webEncode:key], [ACOAuthUtility webEncode:[parameters objectForKey:key]]];
 		}
 	}
-*/
-/*
-	NSLog(@"Signature Key: %@", self.configuration.signatureKey);
-	NSLog(@"Base String: %@", baseString);
-	NSLog(@"Authorization: %@", auth);
-	NSLog(@"URL: %@", [request URL]);
-*/
 
-	[request addValue:auth forHTTPHeaderField:@"Authorization"];
+//	NSLog(@"Signature Key: %@", self.configuration.signatureKey);
+//	NSLog(@"Base String: %@", baseString);
+//	NSLog(@"Authorization: %@", auth);
+
+	if([[request HTTPMethod] isEqualToString:@"GET"]) {
+		[request setURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", url, query]]];
+	} else {
+		[request addValue:auth forHTTPHeaderField:@"Authorization"];
+	}
+	
+//	NSLog(@"URL: %@", [request URL]);
 }
 
 #pragma mark -

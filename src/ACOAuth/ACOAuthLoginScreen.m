@@ -75,7 +75,6 @@
 
 -(void)viewWillAppear:(BOOL)animated {
 	[super viewWillAppear:animated];
-//	[webView sizeToFit];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
@@ -112,6 +111,7 @@
 	[url appendFormat:@"oauth_token=%@&oauth_callback=%@", [ACOAuthUtility webEncode:self.configuration.token], [ACOAuthUtility webEncode:@"close:"]];
 	
 	// Load the request
+	NSLog(@"Authorize URL: %@", url);
 	[webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
 	return YES;
 }
@@ -126,6 +126,9 @@
 		[[NSNotificationCenter defaultCenter] postNotificationName:ACOAuthSessionAuthorizationVerified object:self userInfo:[NSDictionary dictionaryWithObject:self.configuration forKey:@"configuration"]];
 		[self close];
 	}
+	if([[parameters objectForKey:@"close"] boolValue]) {
+		[self close];
+	}
 	return YES;
 }
 
@@ -133,7 +136,17 @@
 	[spinner startAnimating];
 }
 
--(void)webViewDidFinishLoad:(UIWebView*)webView {
+-(void)webViewDidFinishLoad:(UIWebView*)wv {
+	NSMutableString* js = [NSMutableString string];
+	if(configuration.css != nil) {
+		[js appendFormat:@"var head = document.getElementsByTagName('head')[0]; var style = document.createElement('style'); var rules = document.createTextNode('%@'); style.type = 'text/css'; if(style.styleSheet) { style.styleSheet.cssText = rules.nodeValue; } else { style.appendChild(rules); } head.appendChild(style);", configuration.css];
+	}
+	if(configuration.javascript != nil) {
+		[js appendString:configuration.javascript];
+	}
+	if(js.length > 0) {
+		[wv stringByEvaluatingJavaScriptFromString:js];
+	}
 	[spinner stopAnimating];
 }
 
