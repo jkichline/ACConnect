@@ -22,11 +22,22 @@
 
 @end
 
+typedef enum {
+	ACHTTPRequestMethodAutomatic,
+	ACHTTPRequestMethodGet,
+	ACHTTPRequestMethodPost,
+	ACHTTPRequestMethodHead,
+	ACHTTPRequestMethodPut,
+	ACHTTPRequestMethodDelete,
+	ACHTTPRequestMethodTrace
+} ACHTTPRequestMethod;
+
 @interface ACHTTPRequest : NSObject {
 	NSURL* url;
 	id<ACHTTPRequestDelegate> delegate;
 	NSString* username;
 	NSString* password;
+	ACHTTPRequestMethod method;
 	id body;
 	NSMutableData* receivedData;
 	NSHTTPURLResponse* response;
@@ -40,6 +51,7 @@
 @property (nonatomic, retain) NSURL* url;
 @property (nonatomic, retain) NSString* username;
 @property (nonatomic, retain) NSString* password;
+@property ACHTTPRequestMethod method;
 @property (nonatomic, retain) NSURLConnection* connection;
 @property (nonatomic, retain) NSHTTPURLResponse* response;
 @property (nonatomic, retain) NSMutableData* receivedData;

@@ -15,13 +15,14 @@
 
 @implementation ACHTTPRequest
 
-@synthesize action, response, result, body, payload, url, receivedData, delegate, username, password, connection = conn, modifiers;
+@synthesize action, response, result, body, payload, url, receivedData, delegate, username, password, method, connection = conn, modifiers;
 
 #pragma mark - Initialization
 
 -(id)init{
 	if((self = [super init])) {
 		conn = nil;
+		method = ACHTTPRequestMethodAutomatic;
 	}
 	return self;
 }
@@ -75,8 +76,34 @@
 
 	// Create the request
 	NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:self.url cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:30];
+	
+	// Determine the method of the request
+	NSString* httpMethod = @"GET";
+	switch (method) {
+		case ACHTTPRequestMethodGet:
+			httpMethod = @"GET"; break;
+		case ACHTTPRequestMethodPost:
+			httpMethod = @"POST"; break;
+		case ACHTTPRequestMethodPut:
+			httpMethod = @"PUT"; break;
+		case ACHTTPRequestMethodHead:
+			httpMethod = @"HEAD"; break;
+		case ACHTTPRequestMethodDelete:
+			httpMethod = @"DELETE"; break;
+		case ACHTTPRequestMethodTrace:
+			httpMethod = @"TRACE"; break;
+		default:
+			if(self.body != nil) {
+				httpMethod = @"POST";
+			} else {
+				httpMethod = @"GET";
+			}
+			break;
+	}
+	[request setHTTPMethod:httpMethod];
+	
+	// Set body parameters
 	if(self.body != nil) {
-		[request setHTTPMethod:@"POST"];
 		if([self.body isKindOfClass:[NSData class]]) {
 			[request setHTTPBody:(NSData*)body];
 		} else if([self.body isKindOfClass:[NSDictionary class]]) {
