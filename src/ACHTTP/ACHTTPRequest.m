@@ -31,7 +31,7 @@
 	return [[[self alloc] init] autorelease];
 }
 
-+(ACHTTPRequest*)requestWithDelegate:(id<ACHTTPRequestDelegate>)_delegate {
++(ACHTTPRequest*)requestWithDelegate:(id)_delegate {
 	ACHTTPRequest* request = [[self alloc] init];
 	request.delegate = _delegate;
 	return [request autorelease];
@@ -42,6 +42,26 @@
 	request.delegate = _delegate;
 	request.action = _action;
 	return [request autorelease];
+}
+
++(int)networkActivity {
+	return [[NSUserDefaults standardUserDefaults] integerForKey:@"ACHTTPRequestNetworkIncrementer"];
+}
+
++(void)incrementNetworkActivity {
+	int i = [self networkActivity] + 1;
+	[[NSUserDefaults standardUserDefaults] setInteger:i forKey:@"ACHTTPRequestNetworkIncrementer"];
+	if(i > 0) {
+		[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+	}
+}
+
++(void)decrementNetworkActivity {
+	int i = [self networkActivity] - 1;
+	[[NSUserDefaults standardUserDefaults] setInteger:i forKey:@"ACHTTPRequestNetworkIncrementer"];
+	if(i <= 0) {
+		[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+	}
 }
 
 // Sends the request via HTTP.
@@ -124,6 +144,7 @@
 	
 	// Create the connection
 	self.connection = [[NSURLConnection alloc] initWithRequest: request delegate: self];
+	[ACHTTPRequest incrementNetworkActivity];
 	if(self.connection) {
 		self.receivedData = [[NSMutableData alloc] init];
 	} else {
@@ -153,6 +174,7 @@
 
 // Called when the HTTP request fails.
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+	[ACHTTPRequest decrementNetworkActivity];
 	[self.receivedData release];
 	[self handleError:error];
 }
@@ -170,30 +192,37 @@
 	NSLog(@"%@", error);
 }
 
+-(id)result {
+	NSString* mimetype = [self.response MIMEType];
+	NSString* r = nil;
+	
+	if([mimetype hasPrefix:@"text/"]) {
+		r = [[NSString alloc] initWithData: self.receivedData encoding: NSUTF8StringEncoding];
+	}
+
+	if([r rangeOfString:@"http://www.apple.com/DTDs/PropertyList-1.0.dtd"].length > 0) {
+		self.result = [r propertyList];
+	} else {
+		if([mimetype hasPrefix:@"application/json"]) {
+			self.result = [r mutableObjectFromJSONString];
+		} else if([mimetype hasPrefix:@"application/xml"] || [mimetype hasPrefix:@"text/xml"]) {
+			self.result = [XMLReader dictionaryForXMLData:self.receivedData error:nil];
+		} else if([mimetype hasPrefix:@"text/"]) {
+			self.result = r;
+		} else if ([mimetype hasPrefix:@"image/"]) {
+			self.result = [UIImage imageWithData:self.receivedData];
+		} else {
+			self.result = self.receivedData;
+		}
+	}
+	[r release];
+	return result;
+}
+
 // Called when the connection has finished loading.
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+	[ACHTTPRequest decrementNetworkActivity];
 	if(!self.delegate) { return; }
-	
-	NSString* mimetype = [self.response MIMEType];
-	if([mimetype hasPrefix:@"application/json"]) {
-		NSString* r = [[NSString alloc] initWithData: self.receivedData encoding: NSUTF8StringEncoding];
-		self.result = [r mutableObjectFromJSONString];
-		[r release];
-	} else if([mimetype hasPrefix:@"application/xml"] || [mimetype hasPrefix:@"text/xml"]) {
-		self.result = [XMLReader dictionaryForXMLData:self.receivedData error:nil];
-	} else if([mimetype hasPrefix:@"text/"]) {
-		NSString* r = [[NSString alloc] initWithData: self.receivedData encoding: NSUTF8StringEncoding];
-		if([r rangeOfString:@"http://www.apple.com/DTDs/PropertyList-1.0.dtd"].length > 0) {
-			self.result = [r propertyList];
-		} else {
-			self.result = r;
-		}
-		[r release];
-	} else if ([mimetype hasPrefix:@"image/"]) {
-		self.result = [UIImage imageWithData:self.receivedData];
-	} else {
-		self.result = self.receivedData;
-	}
 	
 	if (self.action != nil && [(NSObject*)self.delegate respondsToSelector:self.action]) {
 		[(NSObject*)self.delegate performSelector:self.action withObject:self];

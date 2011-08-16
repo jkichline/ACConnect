@@ -76,10 +76,14 @@ typedef enum {
 +(void)post:(id)url data:(id)data delegate: (id) delegate action:(SEL)action modifiers:(NSArray*)modifiers;
 
 +(ACHTTPRequest*)request;
-+(ACHTTPRequest*)requestWithDelegate:(id<ACHTTPRequestDelegate>)delegate;
++(ACHTTPRequest*)requestWithDelegate:(id)delegate;
 +(ACHTTPRequest*)requestWithDelegate:(id)delegate action:(SEL)action;
 
 +(NSString*)convertDictionaryToParameters:(NSDictionary*)d;
 +(NSString*)convertDictionaryToParameters:(NSDictionary*)d separator:(NSString*)separator;
+
++(int)networkActivity;
++(void)incrementNetworkActivity;
++(void)decrementNetworkActivity;
 
 @end

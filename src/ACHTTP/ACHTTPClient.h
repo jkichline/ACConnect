@@ -13,16 +13,16 @@
 	NSString* username;
 	NSString* password;
 	NSArray* modifiers;
-	id<ACHTTPRequestDelegate> delegate;
+	id delegate;
 }
 
 @property (nonatomic, retain) NSString* username;
 @property (nonatomic, retain) NSString* password;
-@property (nonatomic, retain) id<ACHTTPRequestDelegate> delegate;
+@property (nonatomic, retain) id delegate;
 @property (nonatomic, retain) NSArray* modifiers;
 
--(id)initWithDelegate:(id<ACHTTPRequestDelegate>)delegate;
-+(ACHTTPClient*)clientWithDelegate:(id<ACHTTPRequestDelegate>)delegate;
+-(id)initWithDelegate:(id)delegate;
++(ACHTTPClient*)clientWithDelegate:(id)delegate;
 
 -(ACHTTPRequest*)load:(id)url;
 -(ACHTTPRequest*)load:(id)url data:(id)data;

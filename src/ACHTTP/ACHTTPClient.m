@@ -13,7 +13,7 @@
 
 @synthesize	username, password, modifiers, delegate;
 
--(id)initWithDelegate:(id<ACHTTPRequestDelegate>)_delegate {
+-(id)initWithDelegate:(id)_delegate {
 	self = [self init];
 	if(self) {
 		self.delegate = _delegate;
@@ -21,7 +21,7 @@
 	return self;
 }
 
-+(ACHTTPClient*)clientWithDelegate:(id<ACHTTPRequestDelegate>)delegate {
++(ACHTTPClient*)clientWithDelegate:(id)delegate {
 	return [[[self alloc] initWithDelegate:delegate] autorelease];
 }
 
