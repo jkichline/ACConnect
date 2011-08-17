@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		100824BD13FC46B700105824 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 100824BC13FC46B700105824 /* Security.framework */; };
+		100824E313FC478C00105824 /* CFNetwork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 100824E213FC478C00105824 /* CFNetwork.framework */; };
+		1008252D13FC47EF00105824 /* libz.1.1.3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1008252C13FC47EF00105824 /* libz.1.1.3.dylib */; };
+		1008253113FC47FF00105824 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1008253013FC47FF00105824 /* SystemConfiguration.framework */; };
+		1008253813FC482000105824 /* XMLReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 1008253713FC482000105824 /* XMLReader.m */; };
+		1008253B13FC482F00105824 /* ACKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 1008253A13FC482F00105824 /* ACKeychain.m */; };
 		10920EB113E31DFA0013C62C /* ACFTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920E1A13E31DF90013C62C /* ACFTPClient.m */; };
 		10920EB213E31DFA0013C62C /* ACFTPEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920E1C13E31DF90013C62C /* ACFTPEntry.m */; };
 		10920EB313E31DFA0013C62C /* ACFTPError.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920E1E13E31DF90013C62C /* ACFTPError.m */; };
@@ -77,6 +83,8 @@
 		10920EFF13E31E400013C62C /* ACOAuthLoginScreen.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920EF913E31E400013C62C /* ACOAuthLoginScreen.m */; };
 		10920F0013E31E400013C62C /* ACOAuthSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920EFB13E31E400013C62C /* ACOAuthSession.m */; };
 		10920F0113E31E400013C62C /* ACOAuthUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920EFD13E31E400013C62C /* ACOAuthUtility.m */; };
+		1093F9A513FC4A0000DE89E0 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1093F9A413FC4A0000DE89E0 /* MobileCoreServices.framework */; };
+		10B7148113FC45070068C154 /* ACHTTPDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 10B7148013FC45070068C154 /* ACHTTPDownloader.m */; };
 		1D60589B0D05DD56006BFB54 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
@@ -88,6 +96,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		100824B913FC46A600105824 /* ACHTTPRequestModifier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACHTTPRequestModifier.h; sourceTree = "<group>"; };
+		100824BC13FC46B700105824 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		100824E213FC478C00105824 /* CFNetwork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CFNetwork.framework; path = System/Library/Frameworks/CFNetwork.framework; sourceTree = SDKROOT; };
+		1008252C13FC47EF00105824 /* libz.1.1.3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.1.1.3.dylib; path = usr/lib/libz.1.1.3.dylib; sourceTree = SDKROOT; };
+		1008253013FC47FF00105824 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		1008253613FC482000105824 /* XMLReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XMLReader.h; sourceTree = "<group>"; };
+		1008253713FC482000105824 /* XMLReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLReader.m; sourceTree = "<group>"; };
+		1008253913FC482F00105824 /* ACKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACKeychain.h; sourceTree = "<group>"; };
+		1008253A13FC482F00105824 /* ACKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACKeychain.m; sourceTree = "<group>"; };
 		10920E1913E31DF90013C62C /* ACFTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFTPClient.h; sourceTree = "<group>"; };
 		10920E1A13E31DF90013C62C /* ACFTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACFTPClient.m; sourceTree = "<group>"; };
 		10920E1B13E31DF90013C62C /* ACFTPEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFTPEntry.h; sourceTree = "<group>"; };
@@ -233,6 +250,9 @@
 		10920EFB13E31E400013C62C /* ACOAuthSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACOAuthSession.m; sourceTree = "<group>"; };
 		10920EFC13E31E400013C62C /* ACOAuthUtility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACOAuthUtility.h; sourceTree = "<group>"; };
 		10920EFD13E31E400013C62C /* ACOAuthUtility.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACOAuthUtility.m; sourceTree = "<group>"; };
+		1093F9A413FC4A0000DE89E0 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		10B7147F13FC45070068C154 /* ACHTTPDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACHTTPDownloader.h; sourceTree = "<group>"; };
+		10B7148013FC45070068C154 /* ACHTTPDownloader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACHTTPDownloader.m; sourceTree = "<group>"; };
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1D6058910D05DD3D006BFB54 /* ACConnect.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ACConnect.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -256,6 +276,11 @@
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				288765FD0DF74451002DB57D /* CoreGraphics.framework in Frameworks */,
+				100824BD13FC46B700105824 /* Security.framework in Frameworks */,
+				100824E313FC478C00105824 /* CFNetwork.framework in Frameworks */,
+				1008252D13FC47EF00105824 /* libz.1.1.3.dylib in Frameworks */,
+				1008253113FC47FF00105824 /* SystemConfiguration.framework in Frameworks */,
+				1093F9A513FC4A0000DE89E0 /* MobileCoreServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -315,10 +340,15 @@
 			children = (
 				10920E3013E31DF90013C62C /* ACHTTPClient.h */,
 				10920E3113E31DF90013C62C /* ACHTTPClient.m */,
+				10B7147F13FC45070068C154 /* ACHTTPDownloader.h */,
+				10B7148013FC45070068C154 /* ACHTTPDownloader.m */,
 				10920E3213E31DF90013C62C /* ACHTTPReachability.h */,
 				10920E3313E31DF90013C62C /* ACHTTPReachability.m */,
 				10920E3413E31DF90013C62C /* ACHTTPRequest.h */,
 				10920E3513E31DF90013C62C /* ACHTTPRequest.m */,
+				100824B913FC46A600105824 /* ACHTTPRequestModifier.h */,
+				1008253613FC482000105824 /* XMLReader.h */,
+				1008253713FC482000105824 /* XMLReader.m */,
 				10920E3613E31DF90013C62C /* JSONKit */,
 			);
 			path = ACHTTP;
@@ -538,6 +568,8 @@
 		10920EF513E31E400013C62C /* ACOAuth */ = {
 			isa = PBXGroup;
 			children = (
+				1008253913FC482F00105824 /* ACKeychain.h */,
+				1008253A13FC482F00105824 /* ACKeychain.m */,
 				10920EF613E31E400013C62C /* ACOAuthConfiguration.h */,
 				10920EF713E31E400013C62C /* ACOAuthConfiguration.m */,
 				10920EF813E31E400013C62C /* ACOAuthLoginScreen.h */,
@@ -612,9 +644,14 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				100824BC13FC46B700105824 /* Security.framework */,
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
+				100824E213FC478C00105824 /* CFNetwork.framework */,
 				288765FC0DF74451002DB57D /* CoreGraphics.framework */,
+				1008252C13FC47EF00105824 /* libz.1.1.3.dylib */,
+				1093F9A413FC4A0000DE89E0 /* MobileCoreServices.framework */,
+				1008253013FC47FF00105824 /* SystemConfiguration.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -753,6 +790,9 @@
 				10920EFF13E31E400013C62C /* ACOAuthLoginScreen.m in Sources */,
 				10920F0013E31E400013C62C /* ACOAuthSession.m in Sources */,
 				10920F0113E31E400013C62C /* ACOAuthUtility.m in Sources */,
+				10B7148113FC45070068C154 /* ACHTTPDownloader.m in Sources */,
+				1008253813FC482000105824 /* XMLReader.m in Sources */,
+				1008253B13FC482F00105824 /* ACKeychain.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -794,6 +834,8 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/include/libxml2;
+				OTHER_LDFLAGS = "-lxml2";
 				PREBINDING = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -808,7 +850,9 @@
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/include/libxml2;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				OTHER_LDFLAGS = "-lxml2";
 				PREBINDING = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
