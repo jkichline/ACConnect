@@ -11,6 +11,8 @@
 #import "JSONKit.h"
 #import "XMLReader.h"
 
+static int _networkActivity = 0;
+
 @protocol ACHTTPRequestDelegate;
 
 @implementation ACHTTPRequest
@@ -45,23 +47,26 @@
 }
 
 +(int)networkActivity {
-	return [[NSUserDefaults standardUserDefaults] integerForKey:@"ACHTTPRequestNetworkIncrementer"];
+	return _networkActivity;
 }
 
 +(void)incrementNetworkActivity {
-	int i = [self networkActivity] + 1;
-	[[NSUserDefaults standardUserDefaults] setInteger:i forKey:@"ACHTTPRequestNetworkIncrementer"];
-	if(i > 0) {
+	_networkActivity++;
+	if(_networkActivity > 0) {
 		[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
 	}
 }
 
 +(void)decrementNetworkActivity {
-	int i = [self networkActivity] - 1;
-	[[NSUserDefaults standardUserDefaults] setInteger:i forKey:@"ACHTTPRequestNetworkIncrementer"];
-	if(i <= 0) {
-		[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+	_networkActivity--;
+	if(_networkActivity <= 0) {
+		[self resetNetworkActivity];
 	}
+}
+
++(void)resetNetworkActivity {
+	[[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+	_networkActivity = 0;
 }
 
 // Sends the request via HTTP.
@@ -193,29 +198,7 @@
 }
 
 -(id)result {
-	NSString* mimetype = [self.response MIMEType];
-	NSString* r = nil;
-	
-	if([mimetype hasPrefix:@"text/"]) {
-		r = [[NSString alloc] initWithData: self.receivedData encoding: NSUTF8StringEncoding];
-	}
-
-	if([r rangeOfString:@"http://www.apple.com/DTDs/PropertyList-1.0.dtd"].length > 0) {
-		self.result = [r propertyList];
-	} else {
-		if([mimetype hasPrefix:@"application/json"]) {
-			self.result = [r mutableObjectFromJSONString];
-		} else if([mimetype hasPrefix:@"application/xml"] || [mimetype hasPrefix:@"text/xml"]) {
-			self.result = [XMLReader dictionaryForXMLData:self.receivedData error:nil];
-		} else if([mimetype hasPrefix:@"text/"]) {
-			self.result = r;
-		} else if ([mimetype hasPrefix:@"image/"]) {
-			self.result = [UIImage imageWithData:self.receivedData];
-		} else {
-			self.result = self.receivedData;
-		}
-	}
-	[r release];
+	self.result = [ACHTTPRequest resultsWithData:self.receivedData usingMimeType:[self.response MIMEType]];
 	return result;
 }
 
@@ -255,6 +238,33 @@
     }
 }
 
++(id)resultsWithData:(NSData*)data usingMimeType:(NSString*)mimetype {
+	NSString* r = nil;
+	id output = nil;
+	
+	if([mimetype hasPrefix:@"text/"]) {
+		r = [[[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding] autorelease];
+	}
+	
+	if([r rangeOfString:@"http://www.apple.com/DTDs/PropertyList-1.0.dtd"].length > 0) {
+		output = [r propertyList];
+	} else {
+		if([mimetype hasPrefix:@"application/json"]) {
+			output = [r mutableObjectFromJSONString];
+		} else if([mimetype hasPrefix:@"application/xml"] || [mimetype hasPrefix:@"text/xml"]) {
+			output = [XMLReader dictionaryForXMLData:data error:nil];
+		} else if([mimetype hasPrefix:@"text/"]) {
+			output = r;
+		} else if ([mimetype hasPrefix:@"image/"]) {
+			output = [UIImage imageWithData:data];
+		} else {
+			output = data;
+		}
+	}
+	return output;
+	
+}
+
 +(id)get:(id)url{
 	if([url isKindOfClass:[NSString class]]) {
 		url = [NSURL URLWithString:url];
@@ -274,20 +284,13 @@
 	
 	NSError* error;
 	NSHTTPURLResponse* response;
+	[ACHTTPRequest incrementNetworkActivity];
 	NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
 	NSData* resultData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 	
 	NSString* resultString = [[[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding] autorelease];
-	id resultOutput;
-	@try {
-		resultOutput = [resultString propertyList];
-	}
-	@catch (NSException * e) {
-		resultOutput = resultString;
-	}
-	@finally {
-	}
-	return resultOutput;
+	[ACHTTPRequest decrementNetworkActivity];
+	return [ACHTTPRequest resultsWithData:resultData usingMimeType:[response MIMEType]];
 }
 
 +(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate {

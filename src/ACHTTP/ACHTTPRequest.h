@@ -85,5 +85,6 @@ typedef enum {
 +(int)networkActivity;
 +(void)incrementNetworkActivity;
 +(void)decrementNetworkActivity;
++(void)resetNetworkActivity;
 
 @end
