@@ -13,6 +13,9 @@
 		1008253113FC47FF00105824 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1008253013FC47FF00105824 /* SystemConfiguration.framework */; };
 		1008253813FC482000105824 /* XMLReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 1008253713FC482000105824 /* XMLReader.m */; };
 		1008253B13FC482F00105824 /* ACKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 1008253A13FC482F00105824 /* ACKeychain.m */; };
+		103F4F8C13FED9190063962C /* ACFileTransfer.m in Sources */ = {isa = PBXBuildFile; fileRef = 103F4F8913FED9190063962C /* ACFileTransfer.m */; };
+		103F4F8D13FED9190063962C /* ACFileTransferDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = 103F4F8B13FED9190063962C /* ACFileTransferDetails.m */; };
+		103F4FB313FED9660063962C /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 103F4FB213FED9660063962C /* GameKit.framework */; };
 		10920EB113E31DFA0013C62C /* ACFTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920E1A13E31DF90013C62C /* ACFTPClient.m */; };
 		10920EB213E31DFA0013C62C /* ACFTPEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920E1C13E31DF90013C62C /* ACFTPEntry.m */; };
 		10920EB313E31DFA0013C62C /* ACFTPError.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920E1E13E31DF90013C62C /* ACFTPError.m */; };
@@ -105,6 +108,11 @@
 		1008253713FC482000105824 /* XMLReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLReader.m; sourceTree = "<group>"; };
 		1008253913FC482F00105824 /* ACKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACKeychain.h; sourceTree = "<group>"; };
 		1008253A13FC482F00105824 /* ACKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACKeychain.m; sourceTree = "<group>"; };
+		103F4F8813FED9190063962C /* ACFileTransfer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFileTransfer.h; sourceTree = "<group>"; };
+		103F4F8913FED9190063962C /* ACFileTransfer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACFileTransfer.m; sourceTree = "<group>"; };
+		103F4F8A13FED9190063962C /* ACFileTransferDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFileTransferDetails.h; sourceTree = "<group>"; };
+		103F4F8B13FED9190063962C /* ACFileTransferDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACFileTransferDetails.m; sourceTree = "<group>"; };
+		103F4FB213FED9660063962C /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		10920E1913E31DF90013C62C /* ACFTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFTPClient.h; sourceTree = "<group>"; };
 		10920E1A13E31DF90013C62C /* ACFTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACFTPClient.m; sourceTree = "<group>"; };
 		10920E1B13E31DF90013C62C /* ACFTPEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFTPEntry.h; sourceTree = "<group>"; };
@@ -281,15 +289,28 @@
 				1008252D13FC47EF00105824 /* libz.1.1.3.dylib in Frameworks */,
 				1008253113FC47FF00105824 /* SystemConfiguration.framework in Frameworks */,
 				1093F9A513FC4A0000DE89E0 /* MobileCoreServices.framework in Frameworks */,
+				103F4FB313FED9660063962C /* GameKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		103F4F8713FED9190063962C /* ACFileTransfer */ = {
+			isa = PBXGroup;
+			children = (
+				103F4F8813FED9190063962C /* ACFileTransfer.h */,
+				103F4F8913FED9190063962C /* ACFileTransfer.m */,
+				103F4F8A13FED9190063962C /* ACFileTransferDetails.h */,
+				103F4F8B13FED9190063962C /* ACFileTransferDetails.m */,
+			);
+			path = ACFileTransfer;
+			sourceTree = "<group>";
+		};
 		10920E1713E31DF90013C62C /* src */ = {
 			isa = PBXGroup;
 			children = (
+				103F4F8713FED9190063962C /* ACFileTransfer */,
 				10920E1813E31DF90013C62C /* ACFTP */,
 				10920E2F13E31DF90013C62C /* ACHTTP */,
 				10920EF513E31E400013C62C /* ACOAuth */,
@@ -652,6 +673,7 @@
 				1008252C13FC47EF00105824 /* libz.1.1.3.dylib */,
 				1093F9A413FC4A0000DE89E0 /* MobileCoreServices.framework */,
 				1008253013FC47FF00105824 /* SystemConfiguration.framework */,
+				103F4FB213FED9660063962C /* GameKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -793,6 +815,8 @@
 				10B7148113FC45070068C154 /* ACHTTPDownloader.m in Sources */,
 				1008253813FC482000105824 /* XMLReader.m in Sources */,
 				1008253B13FC482F00105824 /* ACKeychain.m in Sources */,
+				103F4F8C13FED9190063962C /* ACFileTransfer.m in Sources */,
+				103F4F8D13FED9190063962C /* ACFileTransferDetails.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

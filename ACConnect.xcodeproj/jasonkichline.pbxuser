@@ -27,7 +27,17 @@
 		vrLen = 270;
 		vrLoc = 0;
 	};
-	1008255113FC48DE00105824 /* PBXTextBookmark */ = {
+	103F4F9013FED93C0063962C /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = 10920E2313E31DF90013C62C /* README */;
+		name = "README: 1";
+		rLen = 0;
+		rLoc = 0;
+		rType = 0;
+		vrLen = 0;
+		vrLoc = 0;
+	};
+	103F4FB813FED9720063962C /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = 10920E2313E31DF90013C62C /* README */;
 		name = "README: 1";
@@ -83,7 +93,7 @@
 	};
 	10920E2313E31DF90013C62C /* README */ = {
 		uiCtxt = {
-			sepNavIntBoundsRect = "{{0, 0}, {861, 761}}";
+			sepNavIntBoundsRect = "{{0, 0}, {861, 738}}";
 			sepNavSelRange = "{0, 0}";
 			sepNavVisRange = "{0, 0}";
 		};
@@ -115,16 +125,6 @@
 			sepNavSelRange = "{465, 34}";
 			sepNavVisRange = "{0, 1112}";
 		};
-	};
-	1093F9AF13FC4AB300DE89E0 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = 10920E2313E31DF90013C62C /* README */;
-		name = "README: 1";
-		rLen = 0;
-		rLoc = 0;
-		rType = 0;
-		vrLen = 0;
-		vrLoc = 0;
 	};
 	1D6058900D05DD3D006BFB54 /* ACConnect */ = {
 		activeExec = 0;
@@ -167,14 +167,14 @@
 					PBXFileDataSource_Target_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 335300871;
-			PBXWorkspaceStateSaveDate = 335300871;
+			PBXPerProjectTemplateStateSaveDate = 335468872;
+			PBXWorkspaceStateSaveDate = 335468872;
 		};
 		perUserProjectItems = {
 			1008251E13FC47CA00105824 /* PBXTextBookmark */ = 1008251E13FC47CA00105824 /* PBXTextBookmark */;
 			1008251F13FC47CA00105824 /* PBXTextBookmark */ = 1008251F13FC47CA00105824 /* PBXTextBookmark */;
-			1008255113FC48DE00105824 /* PBXTextBookmark */ = 1008255113FC48DE00105824 /* PBXTextBookmark */;
-			1093F9AF13FC4AB300DE89E0 /* PBXTextBookmark */ = 1093F9AF13FC4AB300DE89E0 /* PBXTextBookmark */;
+			103F4F9013FED93C0063962C /* PBXTextBookmark */ = 103F4F9013FED93C0063962C /* PBXTextBookmark */;
+			103F4FB813FED9720063962C /* PBXTextBookmark */ = 103F4FB813FED9720063962C /* PBXTextBookmark */;
 		};
 		sourceControlManager = 10920E0C13E31DB50013C62C /* Source Control */;
 		userBuildSettings = {
