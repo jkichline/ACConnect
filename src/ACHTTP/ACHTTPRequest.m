@@ -76,13 +76,18 @@ static int _networkActivity = 0;
 	NSURL* newUrl = nil;
 	if([value isKindOfClass:[NSURL class]]) {
 		newUrl = [value retain];
-	} else {
+	} else if([value isKindOfClass:[NSString class]]) {
 		newUrl = [[NSURL alloc] initWithString: value];
+		if(newUrl == nil) {
+			NSLog(@"The URL %@ could not be parsed.", value);
+		}
 	}
-	if(newUrl == nil) {
-		NSLog(@"The URL %@ could not be parsed.", value);
+	if([newUrl isKindOfClass:[NSURL class]]) {
+		self.url = newUrl;
 	}
-	self.url = newUrl;
+	if([value isKindOfClass:[NSURLRequest class]]) {
+		self.url = [(NSURLRequest*)value URL];
+	}
 	[newUrl release];
 	
 	// Make sure the network is available
@@ -100,32 +105,48 @@ static int _networkActivity = 0;
 	}
 
 	// Create the request
-	NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:self.url cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:30];
+	NSMutableURLRequest* request = nil;
+	if([value isKindOfClass:[NSURLRequest class]]) {
+		request = value;
+	} else {
+		request = [NSMutableURLRequest requestWithURL:self.url cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:30];
 	
-	// Determine the method of the request
-	NSString* httpMethod = @"GET";
-	switch (method) {
-		case ACHTTPRequestMethodGet:
-			httpMethod = @"GET"; break;
-		case ACHTTPRequestMethodPost:
-			httpMethod = @"POST"; break;
-		case ACHTTPRequestMethodPut:
-			httpMethod = @"PUT"; break;
-		case ACHTTPRequestMethodHead:
-			httpMethod = @"HEAD"; break;
-		case ACHTTPRequestMethodDelete:
-			httpMethod = @"DELETE"; break;
-		case ACHTTPRequestMethodTrace:
-			httpMethod = @"TRACE"; break;
-		default:
-			if(self.body != nil) {
-				httpMethod = @"POST";
+		// Determine the method of the request
+		NSString* httpMethod = @"GET";
+		switch (method) {
+			case ACHTTPRequestMethodGet:
+				httpMethod = @"GET"; break;
+			case ACHTTPRequestMethodPost:
+				httpMethod = @"POST"; break;
+			case ACHTTPRequestMethodPut:
+				httpMethod = @"PUT"; break;
+			case ACHTTPRequestMethodHead:
+				httpMethod = @"HEAD"; break;
+			case ACHTTPRequestMethodDelete:
+				httpMethod = @"DELETE"; break;
+			case ACHTTPRequestMethodTrace:
+				httpMethod = @"TRACE"; break;
+			default:
+				if(self.body != nil) {
+					httpMethod = @"POST";
+				} else {
+					httpMethod = @"GET";
+				}
+				break;
+		}
+		[request setHTTPMethod:httpMethod];
+		
+		// Set body parameters
+		if(self.body != nil) {
+			if([self.body isKindOfClass:[NSData class]]) {
+				[request setHTTPBody:(NSData*)body];
+			} else if([self.body isKindOfClass:[NSDictionary class]]) {
+				[request setHTTPBody:[[ACHTTPRequest convertDictionaryToParameters:(NSDictionary*)self.body] dataUsingEncoding:NSUTF8StringEncoding]];
 			} else {
-				httpMethod = @"GET";
+				[request setHTTPBody:[[NSString stringWithFormat:@"%@", self.body] dataUsingEncoding:NSUTF8StringEncoding]];
 			}
-			break;
+		}
 	}
-	[request setHTTPMethod:httpMethod];
 	
 	// Set body parameters
 	if(self.body != nil) {
