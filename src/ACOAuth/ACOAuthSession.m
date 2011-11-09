@@ -149,8 +149,9 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 #pragma mark -
 #pragma mark - Modifier Methods
 
--(void)modifyRequest:(NSMutableURLRequest *)request {
+-(BOOL)modifyRequest:(NSMutableURLRequest *)request {
 	[self signRequest:request];
+	return YES;
 }
 
 -(BOOL)approveResponse:(NSURLResponse *)r {

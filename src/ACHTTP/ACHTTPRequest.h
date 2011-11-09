@@ -105,5 +105,6 @@ typedef enum {
 +(void)resetNetworkActivity;
 
 +(id)resultsWithData:(NSData*)data usingMimeType:(NSString*)mimetype;
++(NSURL*)appendQueryString:(NSString*)queryString toURL:(NSURL*)url;
 
 @end

@@ -10,7 +10,7 @@
 
 @protocol ACHTTPRequestModifier <NSObject>
 @optional
--(void)modifyRequest:(NSMutableURLRequest*)request;
+-(BOOL)modifyRequest:(NSMutableURLRequest*)request;
 -(BOOL)approveResponse:(NSURLResponse*)response;
 
 @end
