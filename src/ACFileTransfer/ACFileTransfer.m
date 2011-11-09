@@ -3,24 +3,25 @@
 //  OnSong
 //
 //  Created by Jason Kichline on 8/16/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACFileTransfer.h"
 #import "ACFileTransferDetails.h"
 
+#define _GNU_SOURCE
 #define MAX_PACKET_SIZE 65536	
 #define DEFAULT_PACKET_SIZE 8192
 
-NSString* const ACFileTransferFileSent = @"ACFileTransferFileSent";
-NSString* const ACFileTransferFileBegan = @"ACFileTransferFileBegan";
-NSString* const ACFileTransferFileReceived = @"ACFileTransferFileReceived";
-NSString* const ACFileTransferFileFailed = @"ACFileTransferFileFailed";
-NSString* const ACFileTransferPacketSent = @"ACFileTransferPacketSent";
-NSString* const ACFileTransferPacketReceived = @"ACFileTransferPacketReceived";
-NSString* const ACFileTransferPacketFailed = @"ACFileTransferPacketFailed";
-NSString* const ACFileTransferAvailabilityChanged = @"ACFileTransferAvailabilityChanged";
-NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
+NSString* const ACFileTransferFileSentNotification = @"ACFileTransferFileSent";
+NSString* const ACFileTransferFileBeganNotification = @"ACFileTransferFileBegan";
+NSString* const ACFileTransferFileReceivedNotification = @"ACFileTransferFileReceived";
+NSString* const ACFileTransferFileFailedNotification = @"ACFileTransferFileFailed";
+NSString* const ACFileTransferPacketSentNotification = @"ACFileTransferPacketSent";
+NSString* const ACFileTransferPacketReceivedNotification = @"ACFileTransferPacketReceived";
+NSString* const ACFileTransferPacketFailedNotification = @"ACFileTransferPacketFailed";
+NSString* const ACFileTransferAvailabilityChangedNotification = @"ACFileTransferAvailabilityChanged";
+NSString* const ACFileTransferUpdatedPeersNotification = @"ACFileTransferUpdatedPeers";
 
 #if 0
 #define kGKSessionErrorDomain GKSessionErrorDomain
@@ -71,6 +72,7 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 	self = [super init];
 	if(self) {
 		// Set up if it's enabled
+		self.logging = YES;
 		enabled = YES;
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(determineEnabled:) name:@"BluetoothAvailabilityChangedNotification" object:nil];
 		peersConnected = 0;
@@ -86,15 +88,15 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 		self.packetSize = DEFAULT_PACKET_SIZE;
 		
 		// Listen for notifications
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFileSent:) name:ACFileTransferFileSent object:self];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFileBegan:) name:ACFileTransferFileBegan object:self];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFileReceived:) name:ACFileTransferFileReceived object:self];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handlePacketSent:) name:ACFileTransferPacketSent object:self];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handlePacketReceived:) name:ACFileTransferPacketReceived object:self];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFileFailed:) name:ACFileTransferFileFailed object:self];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handlePacketFailed:) name:ACFileTransferPacketFailed object:self];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleUpdatedPeers:) name:ACFileTransferUpdatedPeers object:self];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleAvailabilityChanged:) name:ACFileTransferAvailabilityChanged object:self];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFileSent:) name:ACFileTransferFileSentNotification object:self];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFileBegan:) name:ACFileTransferFileBeganNotification object:self];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFileReceived:) name:ACFileTransferFileReceivedNotification object:self];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handlePacketSent:) name:ACFileTransferPacketSentNotification object:self];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handlePacketReceived:) name:ACFileTransferPacketReceivedNotification object:self];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleFileFailed:) name:ACFileTransferFileFailedNotification object:self];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handlePacketFailed:) name:ACFileTransferPacketFailedNotification object:self];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleUpdatedPeers:) name:ACFileTransferUpdatedPeersNotification object:self];
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleAvailabilityChanged:) name:ACFileTransferAvailabilityChangedNotification object:self];
 	}
 	return self;
 }
@@ -102,22 +104,23 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 -(void)determineEnabled:(NSNotification*)note {
 	enabled = [[note object] boolValue];
 	if(logging) { NSLog(@"Bluetooth: %@", (enabled) ? @"On" : @"Off"); }
-	[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferAvailabilityChanged object:self userInfo:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:enabled] forKey:@"enabled"]];
+	[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferAvailabilityChangedNotification object:self userInfo:[NSDictionary dictionaryWithObject:[NSNumber numberWithBool:enabled] forKey:@"enabled"]];
 }
 
 #pragma mark -
 #pragma mark Connection Methods
 
 -(void)connect {
-	session.delegate = self;
-	session.available = YES;
+	[session setDelegate:self];
 	[session setDataReceiveHandler:self withContext:nil];
+	[session setAvailable:YES];
 }
 
 -(void)disconnect {
 	[session disconnectFromAllPeers];
-	session.available = NO;
-	session.delegate = nil;
+	[session setAvailable:NO];
+	[session setDelegate:nil];
+	[session setDataReceiveHandler:nil withContext:nil];
 }
 
 #pragma mark -
@@ -178,6 +181,12 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 	return [self sendToPeers:_peers];
 }
 
+-(BOOL)sendData:(NSData *)_data withFilename:(NSString *)_filename toPeers:(NSArray *)_peers {
+	self.contents = _data;
+	self.filename = _filename;
+	return [self sendToPeers:_peers];
+}
+
 -(BOOL)sendData:(NSData *)data toPeers:(NSArray *)_peers {
 	self.contents = data;
 	return [self sendToPeers:_peers];
@@ -189,12 +198,12 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 		NSError* error = nil;
 		[self.session sendData:packet toPeers:recipients withDataMode:GKSendDataReliable error:&error];
 		if(error != nil) {
-			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferPacketFailed object:self userInfo:[NSDictionary dictionaryWithObject:error forKey:@"error"]];
+			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferPacketFailedNotification object:self userInfo:[NSDictionary dictionaryWithObject:error forKey:@"error"]];
 		} else {
-			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferPacketSent object:self];
+			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferPacketSentNotification object:self];
 		}
 	}
-	[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferFileSent object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferFileSentNotification object:self];
 	return YES;
 }
 
@@ -208,7 +217,7 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 	if(packet == nil) { return; }
 	
 	// Notify that we received a packet
-	[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferPacketReceived object:self userInfo:packet];
+	[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferPacketReceivedNotification object:self userInfo:packet];
 	
 	// Generate the key from the peer and the UUID
 	NSString* key = [NSString stringWithFormat:@"%@_%@", peer, [packet objectForKey:@"uuid"]];
@@ -227,7 +236,7 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 					[NSNumber numberWithInt:0], @"bytes",
 					data, @"data", nil];
 		[assemblyLine setObject:received forKey:key];
-		[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferFileBegan object:self userInfo:received];
+		[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferFileBeganNotification object:self userInfo:received];
 	}
 
 	// Replace the bytes in the range
@@ -243,9 +252,9 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 		
 		// Check to make sure the data was received properly
 		if([[packet objectForKey:@"digest"] isEqualToString:[[received objectForKey:@"data"] md5]]) {
-			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferFileReceived object:self userInfo:received];
+			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferFileReceivedNotification object:self userInfo:received];
 		} else {
-			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferFileFailed object:self userInfo:received];
+			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferFileFailedNotification object:self userInfo:received];
 		}
 		[assemblyLine removeObjectForKey:key];
 	}
@@ -255,7 +264,7 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 #pragma mark Session Connection
 
 -(void)session:(GKSession*)s peer:(NSString *)peerID didChangeState:(GKPeerConnectionState)state {
-	NSLog(@"Peer %@ changed state", peerID);
+	if(logging) { NSLog(@"Peer %@ changed state", peerID); }
 	switch(state) {
 		case GKPeerStateAvailable:
 			if(logging) {
@@ -270,7 +279,7 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 			break;
 		case GKPeerStateConnected:
 			peersConnected++;
-			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferUpdatedPeers object:self];
+			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferUpdatedPeersNotification object:self];
 			if(logging) {
 				NSLog(@"%@ Connected", [session displayNameForPeer:peerID]);
 			}
@@ -285,14 +294,16 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 			if(logging) {
 				NSLog(@"%@ Disconnected", [session displayNameForPeer:peerID]);
 			}
-			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferUpdatedPeers object:self];
+			[[NSNotificationCenter defaultCenter] postNotificationName:ACFileTransferUpdatedPeersNotification object:self];
 			break;
 	}
 }
 
 - (void)session:(GKSession *)s didReceiveConnectionRequestFromPeer:(NSString *)peerID {
 	NSError* error;
-	NSLog(@"Connect request received from %@", peerID);
+	if(logging) {
+		NSLog(@"Connect request received from %@", peerID);
+	}
 	[s acceptConnectionFromPeer:peerID error:&error];
 }
 
@@ -399,12 +410,12 @@ NSString* const ACFileTransferUpdatedPeers = @"ACFileTransferUpdatedPeers";
 #pragma mark Memory Management
 
 -(void)dealloc {
-	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[self disconnect];
 	[filename release];
 	[contents release];
 	[assemblyLine release];
 	[session release];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[super dealloc];
 }
 

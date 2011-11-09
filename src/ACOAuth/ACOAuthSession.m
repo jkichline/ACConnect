@@ -3,7 +3,7 @@
 //  ACOAuth
 //
 //  Created by Jason Kichline on 7/28/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACOAuthSession.h"
@@ -55,7 +55,7 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 	}
 	if(configuration.token != nil && configuration.tokenSecret != nil) {
 		[self performSelector:@selector(connected) withObject:nil afterDelay:0.1];
-	} else {
+	} else if(configuration.authenticateImmediately) {
 		[self requestToken];
 	}
 }
@@ -74,11 +74,11 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 
 	// Create and sign the request
 	NSMutableURLRequest* request = [[[NSMutableURLRequest alloc] initWithURL:self.configuration.requestTokenURL] autorelease];
-	[request setHTTPMethod:@"POST"];
+	[request setHTTPMethod:self.configuration.requestTokenMethod];
 	[self signRequest:request];
 
 	// Create the connection and handle it
-	NSURLConnection* connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+	NSURLConnection* connection = [[[NSURLConnection alloc] initWithRequest:request delegate:self] autorelease];
 	[connection start];
 	return YES;
 }
@@ -90,11 +90,11 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 	
 	// Create and sign the request
 	NSMutableURLRequest* request = [[[NSMutableURLRequest alloc] initWithURL:self.configuration.accessTokenURL] autorelease];
-	[request setHTTPMethod:@"POST"];
+	[request setHTTPMethod:self.configuration.accessTokenMethod];
 	[self signRequest:request];
 	
 	// Create the connection and handle it
-	NSURLConnection* connection = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+	NSURLConnection* connection = [[[NSURLConnection alloc] initWithRequest:request delegate:self] autorelease];
 	[connection start];
 	return YES;
 }
@@ -147,13 +147,31 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 }
 
 #pragma mark -
-#pragma mark Sign Requests
+#pragma mark - Modifier Methods
 
 -(void)modifyRequest:(NSMutableURLRequest *)request {
 	[self signRequest:request];
 }
 
+-(BOOL)approveResponse:(NSURLResponse *)r {
+	if([r isKindOfClass:[NSHTTPURLResponse class]]) {
+		NSHTTPURLResponse* r2 = (NSHTTPURLResponse*)r;
+		if(r2.statusCode == 401 || r2.statusCode == 403) {
+			[self requestToken];
+			return NO;
+		}
+	}
+	return YES;
+}
+
+#pragma mark -
+#pragma mark Sign Requests
+
 -(void)signRequest:(NSMutableURLRequest*)request {
+	return [self signRequest:request useAuthorizationHeader:NO];
+}
+
+-(void)signRequest:(NSMutableURLRequest*)request useAuthorizationHeader:(BOOL)useAuthorizationHeader {
 	
 	// Generate a nonce
 	NSString* nonce = [ACOAuthUtility MD5:[NSString stringWithFormat:@"%d", [[NSDate date] timeIntervalSince1970]]];
@@ -179,6 +197,9 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 	[parameters setObject:[NSNumber numberWithInt:[[NSDate date] timeIntervalSince1970]] forKey:@"oauth_timestamp"];
 	[parameters setObject:nonce forKey:@"oauth_nonce"];
 	[parameters setObject:@"1.0" forKey:@"oauth_version"];
+	if([request.URL.absoluteString hasSuffix:@"request_token"]) {
+		[parameters setObject:self.configuration.consumerSecret forKey:@"oauth_consumer_secret"];
+	}
 	
 	if(self.configuration.token) {
 //		NSLog(@"Token: %@", self.configuration.token);
@@ -245,25 +266,25 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 		}
 	}
 
-	NSMutableString* query = [NSMutableString string];
-	if([[request URL] query] != nil) {
-		[query appendString:[[request URL] query]];
-	}
-	for(NSString* key in [[parameters allKeys] sortedArrayUsingSelector:@selector(localizedStandardCompare:)]) {
-		if([key hasPrefix:@"oauth_"]) {
-			if([query length] > 0) {
-				[query appendString:@"&"];
-			}
-			[query appendFormat:@"%@=%@", [ACOAuthUtility webEncode:key], [ACOAuthUtility webEncode:[parameters objectForKey:key]]];
+	if(!useAuthorizationHeader) {
+		NSMutableString* query = [NSMutableString string];
+		if([[request URL] query] != nil) {
+			[query appendString:[[request URL] query]];
 		}
-	}
+		for(NSString* key in [[parameters allKeys] sortedArrayUsingSelector:@selector(localizedStandardCompare:)]) {
+			if([key hasPrefix:@"oauth_"]) {
+				if([query length] > 0) {
+					[query appendString:@"&"];
+				}
+				[query appendFormat:@"%@=%@", [ACOAuthUtility webEncode:key], [ACOAuthUtility webEncode:[parameters objectForKey:key]]];
+			}
+		}
 
-//	NSLog(@"Signature Key: %@", self.configuration.signatureKey);
-//	NSLog(@"Base String: %@", baseString);
-//	NSLog(@"Authorization: %@", auth);
-
-	if([[request HTTPMethod] isEqualToString:@"GET"]) {
-		[request setURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", url, query]]];
+		if([[request HTTPMethod] isEqualToString:@"GET"]) {
+			[request setURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", url, query]]];
+		} else {
+			[request addValue:auth forHTTPHeaderField:@"Authorization"];
+		}
 	} else {
 		[request addValue:auth forHTTPHeaderField:@"Authorization"];
 	}
@@ -312,12 +333,12 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 	
 	// Post a notification for request token
 	NSString* responseURL = [[self.response URL] absoluteString];
-	if([responseURL isEqualToString:[self.configuration.requestTokenURL absoluteString]]) {
+	if([responseURL hasPrefix:[self.configuration.requestTokenURL absoluteString]]) {
 		[[NSNotificationCenter defaultCenter] postNotificationName:ACOAuthSessionRequestTokenReceived object:self userInfo:[NSDictionary dictionaryWithObject:self.configuration forKey:@"configuration"]];
 	}
 	
 	// Post a notification for access token
-	if([responseURL isEqualToString:[self.configuration.accessTokenURL absoluteString]]) {
+	if([responseURL hasPrefix:[self.configuration.accessTokenURL absoluteString]]) {
 		[[NSNotificationCenter defaultCenter] postNotificationName:ACOAuthSessionAccessTokenReceived object:self userInfo:[NSDictionary dictionaryWithObject:self.configuration forKey:@"configuration"]];
 	}
 }

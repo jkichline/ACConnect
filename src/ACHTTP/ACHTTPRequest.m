@@ -3,21 +3,29 @@
 //  Strine
 //
 //  Created by Jason Kichline on 10/20/09.
-//  Copyright 2009 andCulture. All rights reserved.
+//  Copyright 2009 //  Copyright 2009 Jason Kichline. All rights reserved.. All rights reserved.
 //
 
 #import "ACHTTPRequest.h"
 #import "ACHTTPReachability.h"
 #import "JSONKit.h"
+#import "ACHTTPAdditions.h"
 #import "XMLReader.h"
 
 static int _networkActivity = 0;
 
 @protocol ACHTTPRequestDelegate;
 
+@interface ACHTTPRequest (Private)
+
++(id)standardizeDictionaryTypes:(id)input;
++(id)convertType:(id)value;
+
+@end
+
 @implementation ACHTTPRequest
 
-@synthesize action, response, result, body, payload, url, receivedData, delegate, username, password, method, connection = conn, modifiers;
+@synthesize action, response, result, body, payload, url, receivedData, delegate, username, password, method, connection = conn, modifiers, contentType;
 
 #pragma mark - Initialization
 
@@ -70,6 +78,10 @@ static int _networkActivity = 0;
 }
 
 // Sends the request via HTTP.
+-(void)send {
+	[self getUrl:self.url];
+}
+
 - (void) getUrl:(id)value {
 	
 	// Make it a URL if it's not one
@@ -135,44 +147,77 @@ static int _networkActivity = 0;
 				break;
 		}
 		[request setHTTPMethod:httpMethod];
-		
-		// Set body parameters
-		if(self.body != nil) {
+	}
+
+	// Set body parameters
+	if(self.body != nil) {
+		if(self.method == ACHTTPRequestMethodPost) {
 			if([self.body isKindOfClass:[NSData class]]) {
 				[request setHTTPBody:(NSData*)body];
 			} else if([self.body isKindOfClass:[NSDictionary class]]) {
-				[request setHTTPBody:[[ACHTTPRequest convertDictionaryToParameters:(NSDictionary*)self.body] dataUsingEncoding:NSUTF8StringEncoding]];
+				switch (self.contentType) {
+	/*
+					case ACHTTPPostFormMultipart:
+						[request setHTTPBody:[[ACHTTPRequest convertDictionaryToMultipart:(NSDictionary*)self.body] dataUsingEncoding:NSUTF8StringEncoding]];
+						break;
+	*/
+					case ACHTTPPostXML:
+						[request setHTTPBody:[[ACHTTPRequest convertDictionaryToXML:(NSDictionary*)self.body] dataUsingEncoding:NSUTF8StringEncoding]];
+						break;
+					case ACHTTPPostJSON:
+						[request setHTTPBody:[[ACHTTPRequest convertDictionaryToJSON:(NSDictionary*)self.body] dataUsingEncoding:NSUTF8StringEncoding]];
+						break;
+					default:
+						[request setHTTPBody:[[ACHTTPRequest convertDictionaryToURLEncoded:(NSDictionary*)self.body] dataUsingEncoding:NSUTF8StringEncoding]];
+						break;
+				}
 			} else {
 				[request setHTTPBody:[[NSString stringWithFormat:@"%@", self.body] dataUsingEncoding:NSUTF8StringEncoding]];
+			}
+		} else {
+			if([self.body isKindOfClass:[NSDictionary class]]) {
+				self.url = [ACHTTPRequest appendQueryString:[ACHTTPRequest convertDictionaryToURLEncoded:(NSDictionary*)self.body] toURL:self.url];
 			}
 		}
 	}
 	
-	// Set body parameters
-	if(self.body != nil) {
-		if([self.body isKindOfClass:[NSData class]]) {
-			[request setHTTPBody:(NSData*)body];
-		} else if([self.body isKindOfClass:[NSDictionary class]]) {
-			[request setHTTPBody:[[ACHTTPRequest convertDictionaryToParameters:(NSDictionary*)self.body] dataUsingEncoding:NSUTF8StringEncoding]];
-		} else {
-			[request setHTTPBody:[[NSString stringWithFormat:@"%@", self.body] dataUsingEncoding:NSUTF8StringEncoding]];
-		}
+	// Set the content type
+	switch (self.contentType) {
+/*
+		case ACHTTPPostFormMultipart:
+			[request addValue:@"multipart/form-data" forHTTPHeaderField:@"Content-Type"];
+			break;
+*/
+		case ACHTTPPostXML:
+			[request addValue:@"text/xml; charset=utf-8" forHTTPHeaderField:@"Content-Type"];
+			break;
+		case ACHTTPPostJSON:
+			[request addValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+			break;
+		default:
+			[request addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+			break;
 	}
 	
 	// If we have any modifiers specified, run them
 	if(self.modifiers != nil) {
 		for(id modifier in self.modifiers) {
 			if([modifier conformsToProtocol:@protocol(ACHTTPRequestModifier)]) {
-				[modifier modifyRequest:request];
+				if([modifier modifyRequest:request] == NO) {
+					return;
+				}
 			}
 		}
 	}
-	
+	[self call:request];
+}
+
+-(void)call:(NSURLRequest*)request {
 	// Create the connection
-	self.connection = [[NSURLConnection alloc] initWithRequest: request delegate: self];
+	self.connection = [[[NSURLConnection alloc] initWithRequest: request delegate: self] autorelease];
 	[ACHTTPRequest incrementNetworkActivity];
 	if(self.connection) {
-		self.receivedData = [[NSMutableData alloc] init];
+		self.receivedData = [[[NSMutableData alloc] init] autorelease];
 	} else {
 		NSError* error = [NSError errorWithDomain:@"ACHTTPRequest" code:404 userInfo: [NSDictionary dictionaryWithObjectsAndKeys: @"Could not create connection", NSLocalizedDescriptionKey,nil]];
 		[self handleError: error];
@@ -183,6 +228,20 @@ static int _networkActivity = 0;
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)r {
 	self.response = (NSHTTPURLResponse*)r;
     [self.receivedData setLength:0];
+	
+	// Check to see if we should continue
+	BOOL shouldContinue = YES;
+	for(id<ACHTTPRequestModifier> modifier in self.modifiers) {
+		if([modifier respondsToSelector:@selector(approveResponse:)] && [modifier approveResponse:r] == NO) {
+			shouldContinue = NO;
+		}
+	}
+	
+	// If we should stop, then stop here
+	if(shouldContinue == NO) {
+		[connection cancel];
+		return;
+	}
 	
 	// Notify the delegate of progress
 	if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(httpRequest:updatedProgress:)]) {
@@ -201,7 +260,7 @@ static int _networkActivity = 0;
 // Called when the HTTP request fails.
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
 	[ACHTTPRequest decrementNetworkActivity];
-	[self.receivedData release];
+	self.receivedData = nil;
 	[self handleError:error];
 }
 
@@ -216,6 +275,10 @@ static int _networkActivity = 0;
 		[(NSObject*)self.delegate performSelector:action withObject: self withObject: error];
 	}
 	NSLog(@"%@", error);
+}
+
+-(NSString*)description {
+	return [NSString stringWithFormat:@"%@", self.result];
 }
 
 -(id)result {
@@ -260,10 +323,10 @@ static int _networkActivity = 0;
 }
 
 +(id)resultsWithData:(NSData*)data usingMimeType:(NSString*)mimetype {
-	NSString* r = nil;
+	NSString* r = @"";
 	id output = nil;
 	
-	if([mimetype hasPrefix:@"text/"]) {
+	if([mimetype hasPrefix:@"text/"] || [mimetype isEqualToString:@"application/json"]) {
 		r = [[[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding] autorelease];
 	}
 	
@@ -273,7 +336,7 @@ static int _networkActivity = 0;
 		if([mimetype hasPrefix:@"application/json"]) {
 			output = [r mutableObjectFromJSONString];
 		} else if([mimetype hasPrefix:@"application/xml"] || [mimetype hasPrefix:@"text/xml"]) {
-			output = [XMLReader dictionaryForXMLData:data error:nil];
+			output = [self standardizeDictionaryTypes:[XMLReader dictionaryForXMLData:data error:nil]];
 		} else if([mimetype hasPrefix:@"text/"]) {
 			output = r;
 		} else if ([mimetype hasPrefix:@"image/"]) {
@@ -284,6 +347,58 @@ static int _networkActivity = 0;
 	}
 	return output;
 	
+}
+
++(id)standardizeDictionaryTypes:(id)input {
+	
+	// Handle if it is a dictionary
+	if([input isKindOfClass:[NSDictionary class]]) {
+		if([[input allKeys] count] == 1 && [[[input allKeys] lastObject] isEqualToString:@"text"]) {
+			return [self convertType:[input objectForKey:@"text"]];
+		} else {
+			NSMutableDictionary* d = [NSMutableDictionary dictionary];
+			for(id key in [input allKeys]) {
+				[d setObject:[self standardizeDictionaryTypes:[input objectForKey:key]] forKey:key];
+			}
+			return d;
+		}
+	}
+	
+	// Handle arrays
+	else if([input isKindOfClass:[NSArray class]]) {
+		NSMutableArray* a = [NSMutableArray array];
+		for(id item in input) {
+			[a addObject:[self standardizeDictionaryTypes:item]];
+		}
+		return a;
+	}
+	
+	// Otherwise, just return the value
+	else {
+		return [self convertType:input];
+	}
+}
+
++(id)convertType:(id)value {
+	if([value isKindOfClass:[NSString class]]) {
+		static NSDateFormatter* df = nil;
+		if(df == nil) {
+			df = [[NSDateFormatter alloc] init];
+			df.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'.'SSSZZ";
+		}
+		NSDate* date = nil;
+		if([df getObjectValue:&date forString:value range:nil error:nil] && date != nil) {
+			return date;
+		}
+/*
+		double number = 0;
+		NSScanner* scanner = [NSScanner scannerWithString:value];
+		if([scanner scanDouble:&number] && [scanner isAtEnd]) {
+			return [NSNumber numberWithDouble:number];
+		}
+*/
+	}
+	return value;
 }
 
 +(id)get:(id)url{
@@ -309,7 +424,7 @@ static int _networkActivity = 0;
 	NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
 	NSData* resultData = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 	
-	NSString* resultString = [[[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding] autorelease];
+//	NSString* resultString = [[[NSString alloc] initWithData:resultData encoding:NSUTF8StringEncoding] autorelease];
 	[ACHTTPRequest decrementNetworkActivity];
 	return [ACHTTPRequest resultsWithData:resultData usingMimeType:[response MIMEType]];
 }
@@ -343,11 +458,20 @@ static int _networkActivity = 0;
 	[self post:url data:data delegate:delegate modifiers:nil];
 }
 
++(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate:(id <ACHTTPRequestDelegate>)delegate {
+	return [self post:url data:data contentType:contentType delegate:delegate modifiers:nil];
+}
+
 +(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate modifiers:(NSArray*)modifiers {
+	return [self post:url data:data contentType:ACHTTPPostFormURLEncoded delegate:delegate modifiers:modifiers];
+}
+
++(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)_contentType delegate:(id <ACHTTPRequestDelegate>)delegate modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
 	wd.body = data;
 	wd.modifiers = modifiers;
+	wd.contentType = _contentType;
 	[wd getUrl:url];
 	[wd release];
 }
@@ -356,12 +480,22 @@ static int _networkActivity = 0;
 	return [self post:url data:data delegate:delegate action:action modifiers:nil];
 }
 
++(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)_contentType delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action {
+	return [self post:url data:data contentType:_contentType delegate:delegate action:action modifiers:nil];
+}
+
 +(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action modifiers:(NSArray*)modifiers {
+	return [self post:url data:data contentType:ACHTTPPostFormURLEncoded delegate:delegate action:action modifiers:modifiers];
+}
+
++(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)_contentType delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
 	wd.action = action;
 	wd.modifiers = modifiers;
+	wd.method = ACHTTPRequestMethodPost;
 	wd.body = data;
+	wd.contentType = _contentType;
 	[wd getUrl:url];
 	[wd release];
 }
@@ -373,11 +507,25 @@ static int _networkActivity = 0;
 	return YES;
 }
 
-+(NSString*)convertDictionaryToParameters:(NSDictionary*)d {
-	return [self convertDictionaryToParameters:d separator:nil];
+#pragma mark - Conversion Methods
+
++(NSString*)convertDictionaryToXML:(NSDictionary*)d {
+	return [d xmlDocument];
 }
 
-+(NSString*)convertDictionaryToParameters:(NSDictionary*)d separator:(NSString*)separator {
++(NSString*)convertDictionaryToJSON:(NSDictionary*)d {
+	return [d JSONString];
+}
+
++(NSString*)convertDictionaryToMultipart:(NSDictionary*)d {
+	return nil;
+}
+
++(NSString*)convertDictionaryToURLEncoded:(NSDictionary*)d {
+	return [self convertDictionaryToURLEncoded:d separator:nil];
+}
+
++(NSString*)convertDictionaryToURLEncoded:(NSDictionary*)d separator:(NSString*)separator {
 	if(separator == nil) { separator = @"."; }
 	NSMutableString* s = [NSMutableString string];
 	for(id key in [d allKeys]) {
@@ -390,7 +538,25 @@ static int _networkActivity = 0;
 	return s;
 }
 
++(NSURL*)appendQueryString:(NSString*)queryString toURL:(NSURL*)url {
+	NSMutableString* newUrl = [NSMutableString stringWithString:[NSString stringWithFormat:@"%@", url]];
+	if(url.query != nil && url.query.length > 0) {
+		[newUrl appendString:@"&"];
+	} else {
+		[newUrl appendString:@"?"];
+	}
+	[newUrl appendString:queryString];
+	return [NSURL URLWithString:newUrl];
+}
+
 -(void)dealloc{
+	[body release];
+	[result release];
+	[payload release];
+	[(NSObject*)delegate release];
+	[response release];
+	[username release];
+	[password release];
 	[receivedData release];
 	[url release];
 	[conn release];

@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate_iPad.h"
+#import "ACSugarSync.h"
 
 @implementation AppDelegate_iPad
 
@@ -19,12 +20,51 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {    
     
     // Override point for customization after application launch.
-    
+	ACSugarSyncClient* client = [ACSugarSyncClient clientWithUsername:@"jkichline@gmail.com" password:@"spoon!08" accessKey:@"MTY0OTE1ODEzMTM1MzU1NTYxNjg" privateAccessKey:@"MmFhYzljN2RlOGQ0NDA5YWE1NDNlYTA0Yzk2MDk5N2Q"];
+	[client authorize:self selector:@selector(authorized:)];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleAuthorization:) name:ACSugarSyncAuthorizationCompleteNotification object:client];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRetrieveUser:) name:ACSugarSyncRetrievedUserNotification object:client];
     [self.window makeKeyAndVisible];
     
     return YES;
 }
 
+-(void)authorized:(ACSugarSyncClient*)client {
+	[client user:self selector:@selector(handleUser:)];
+}
+
+-(void)handleUser:(ACSugarSyncUser*)user {
+	[user retrieveCollection:ACSugarSyncWorkspacesCollection target:self selector:@selector(test:)];
+}
+
+-(void)test:(id)value {
+	if([value isKindOfClass:[NSArray class]]) {
+		for(id item in value) {
+			if([item isKindOfClass:[ACSugarSyncCollection class]]) {
+				NSLog(@"Collection: %@", item);
+				ACSugarSyncCollection* collection = (ACSugarSyncCollection*)item;
+				[collection createFolderNamed:@"Test 123" target:self selector:@selector(log:)];
+				if([collection.displayName isEqualToString:@"Inserting"]) {
+					[collection contents:self selector:@selector(test:)];
+				}
+			} else if([item isKindOfClass:[ACSugarSyncFile class]]) {
+				ACSugarSyncFile* file = (ACSugarSyncFile*)item;
+				NSLog(@"File: %@ - %d bytes", file, file.size);
+				if(file.size > 0) {
+//					[file downloadFile];
+//					break;
+				}
+			}
+		}
+	} else {
+		NSLog(@"%@", value);
+	}
+}
+
+-(void)log:(id)value {
+	NSLog(@"%@", value);
+}
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     /*

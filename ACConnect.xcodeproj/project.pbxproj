@@ -13,9 +13,15 @@
 		1008253113FC47FF00105824 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1008253013FC47FF00105824 /* SystemConfiguration.framework */; };
 		1008253813FC482000105824 /* XMLReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 1008253713FC482000105824 /* XMLReader.m */; };
 		1008253B13FC482F00105824 /* ACKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 1008253A13FC482F00105824 /* ACKeychain.m */; };
+		1019B21214130B7B00CCC8E1 /* ACSugarSyncClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 1019B21114130B7B00CCC8E1 /* ACSugarSyncClient.m */; };
+		1019B21B1413287300CCC8E1 /* ACHTTPAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 1019B21A1413287300CCC8E1 /* ACHTTPAdditions.m */; };
 		103F4F8C13FED9190063962C /* ACFileTransfer.m in Sources */ = {isa = PBXBuildFile; fileRef = 103F4F8913FED9190063962C /* ACFileTransfer.m */; };
 		103F4F8D13FED9190063962C /* ACFileTransferDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = 103F4F8B13FED9190063962C /* ACFileTransferDetails.m */; };
 		103F4FB313FED9660063962C /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 103F4FB213FED9660063962C /* GameKit.framework */; };
+		1079C5651414687D0015C57C /* ACSugarSyncUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 1079C5641414687D0015C57C /* ACSugarSyncUser.m */; };
+		1079C5681414864F0015C57C /* ACSugarSyncFolder.m in Sources */ = {isa = PBXBuildFile; fileRef = 1079C5671414864F0015C57C /* ACSugarSyncFolder.m */; };
+		1079C57314164F3D0015C57C /* ACSugarSyncCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 1079C57214164F3C0015C57C /* ACSugarSyncCollection.m */; };
+		1079C576141650430015C57C /* ACSugarSyncFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 1079C575141650420015C57C /* ACSugarSyncFile.m */; };
 		10920EB113E31DFA0013C62C /* ACFTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920E1A13E31DF90013C62C /* ACFTPClient.m */; };
 		10920EB213E31DFA0013C62C /* ACFTPEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920E1C13E31DF90013C62C /* ACFTPEntry.m */; };
 		10920EB313E31DFA0013C62C /* ACFTPError.m in Sources */ = {isa = PBXBuildFile; fileRef = 10920E1E13E31DF90013C62C /* ACFTPError.m */; };
@@ -108,11 +114,24 @@
 		1008253713FC482000105824 /* XMLReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = XMLReader.m; sourceTree = "<group>"; };
 		1008253913FC482F00105824 /* ACKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACKeychain.h; sourceTree = "<group>"; };
 		1008253A13FC482F00105824 /* ACKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACKeychain.m; sourceTree = "<group>"; };
+		1019B21014130B7B00CCC8E1 /* ACSugarSyncClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACSugarSyncClient.h; sourceTree = "<group>"; };
+		1019B21114130B7B00CCC8E1 /* ACSugarSyncClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACSugarSyncClient.m; sourceTree = "<group>"; };
+		1019B2191413287300CCC8E1 /* ACHTTPAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACHTTPAdditions.h; sourceTree = "<group>"; };
+		1019B21A1413287300CCC8E1 /* ACHTTPAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACHTTPAdditions.m; sourceTree = "<group>"; };
 		103F4F8813FED9190063962C /* ACFileTransfer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFileTransfer.h; sourceTree = "<group>"; };
 		103F4F8913FED9190063962C /* ACFileTransfer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACFileTransfer.m; sourceTree = "<group>"; };
 		103F4F8A13FED9190063962C /* ACFileTransferDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFileTransferDetails.h; sourceTree = "<group>"; };
 		103F4F8B13FED9190063962C /* ACFileTransferDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACFileTransferDetails.m; sourceTree = "<group>"; };
 		103F4FB213FED9660063962C /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
+		1079C5631414687D0015C57C /* ACSugarSyncUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACSugarSyncUser.h; sourceTree = "<group>"; };
+		1079C5641414687D0015C57C /* ACSugarSyncUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACSugarSyncUser.m; sourceTree = "<group>"; };
+		1079C5661414864F0015C57C /* ACSugarSyncFolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACSugarSyncFolder.h; sourceTree = "<group>"; };
+		1079C5671414864F0015C57C /* ACSugarSyncFolder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACSugarSyncFolder.m; sourceTree = "<group>"; };
+		1079C57114164F3C0015C57C /* ACSugarSyncCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACSugarSyncCollection.h; sourceTree = "<group>"; };
+		1079C57214164F3C0015C57C /* ACSugarSyncCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACSugarSyncCollection.m; sourceTree = "<group>"; };
+		1079C574141650420015C57C /* ACSugarSyncFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACSugarSyncFile.h; sourceTree = "<group>"; };
+		1079C575141650420015C57C /* ACSugarSyncFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACSugarSyncFile.m; sourceTree = "<group>"; };
+		1079C57714167B210015C57C /* ACSugarSync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACSugarSync.h; sourceTree = "<group>"; };
 		10920E1913E31DF90013C62C /* ACFTPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFTPClient.h; sourceTree = "<group>"; };
 		10920E1A13E31DF90013C62C /* ACFTPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ACFTPClient.m; sourceTree = "<group>"; };
 		10920E1B13E31DF90013C62C /* ACFTPEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ACFTPEntry.h; sourceTree = "<group>"; };
@@ -296,6 +315,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1019B20F14130B6000CCC8E1 /* ACSugarSync */ = {
+			isa = PBXGroup;
+			children = (
+				1079C57714167B210015C57C /* ACSugarSync.h */,
+				1019B21014130B7B00CCC8E1 /* ACSugarSyncClient.h */,
+				1019B21114130B7B00CCC8E1 /* ACSugarSyncClient.m */,
+				1079C5631414687D0015C57C /* ACSugarSyncUser.h */,
+				1079C5641414687D0015C57C /* ACSugarSyncUser.m */,
+				1079C5661414864F0015C57C /* ACSugarSyncFolder.h */,
+				1079C5671414864F0015C57C /* ACSugarSyncFolder.m */,
+				1079C57114164F3C0015C57C /* ACSugarSyncCollection.h */,
+				1079C57214164F3C0015C57C /* ACSugarSyncCollection.m */,
+				1079C574141650420015C57C /* ACSugarSyncFile.h */,
+				1079C575141650420015C57C /* ACSugarSyncFile.m */,
+			);
+			path = ACSugarSync;
+			sourceTree = "<group>";
+		};
 		103F4F8713FED9190063962C /* ACFileTransfer */ = {
 			isa = PBXGroup;
 			children = (
@@ -315,6 +352,7 @@
 				10920E2F13E31DF90013C62C /* ACHTTP */,
 				10920EF513E31E400013C62C /* ACOAuth */,
 				10920E3913E31DF90013C62C /* ACS3 */,
+				1019B20F14130B6000CCC8E1 /* ACSugarSync */,
 				10920E7213E31DFA0013C62C /* ACWebDAV */,
 			);
 			path = src;
@@ -370,6 +408,8 @@
 				100824B913FC46A600105824 /* ACHTTPRequestModifier.h */,
 				1008253613FC482000105824 /* XMLReader.h */,
 				1008253713FC482000105824 /* XMLReader.m */,
+				1019B2191413287300CCC8E1 /* ACHTTPAdditions.h */,
+				1019B21A1413287300CCC8E1 /* ACHTTPAdditions.m */,
 				10920E3613E31DF90013C62C /* JSONKit */,
 			);
 			path = ACHTTP;
@@ -817,6 +857,12 @@
 				1008253B13FC482F00105824 /* ACKeychain.m in Sources */,
 				103F4F8C13FED9190063962C /* ACFileTransfer.m in Sources */,
 				103F4F8D13FED9190063962C /* ACFileTransferDetails.m in Sources */,
+				1019B21214130B7B00CCC8E1 /* ACSugarSyncClient.m in Sources */,
+				1019B21B1413287300CCC8E1 /* ACHTTPAdditions.m in Sources */,
+				1079C5651414687D0015C57C /* ACSugarSyncUser.m in Sources */,
+				1079C5681414864F0015C57C /* ACSugarSyncFolder.m in Sources */,
+				1079C57314164F3D0015C57C /* ACSugarSyncCollection.m in Sources */,
+				1079C576141650430015C57C /* ACSugarSyncFile.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

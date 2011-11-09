@@ -3,12 +3,13 @@
 //  ACWebDAVTest
 //
 //  Created by Jason Kichline on 8/19/10.
-//  Copyright 2010 andCulture. All rights reserved.
+//  Copyright 2010 Jason Kichline. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import "ACWebDAV.h"
 
+@class ACWebDAVItem;
 @class ACWebDAVPropertyRequest;
 
 @protocol ACWebDAVPropertyRequestDelegate

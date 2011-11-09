@@ -3,7 +3,7 @@
 //  ACOAuth
 //
 //  Created by Jason Kichline on 7/29/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -17,8 +17,11 @@ typedef enum {
 @interface ACOAuthConfiguration : NSObject {
 	NSURL* baseURL;
 	NSURL* requestTokenURL;
+	NSString* requestTokenMethod;
 	NSURL* accessTokenURL;
+	NSString* accessTokenMethod;
 	NSURL* authorizationURL;
+	NSString* authorizationMethod;
 	NSURL* callbackURL;
 	
 	NSString* consumerKey;
@@ -30,6 +33,7 @@ typedef enum {
 	NSString* css;
 	NSString* javascript;
 	
+	BOOL authenticateImmediately;
 	NSMutableDictionary* parameters;
 	
 	UIColor* tintColor;
@@ -41,10 +45,13 @@ typedef enum {
 
 @property (nonatomic, retain) NSURL* baseURL;
 @property (nonatomic, retain) NSURL* requestTokenURL;
+@property (nonatomic, retain) NSString* requestTokenMethod;
 @property (nonatomic, retain) NSURL* accessTokenURL;
+@property (nonatomic, retain) NSString* accessTokenMethod;
 @property (nonatomic, retain) NSURL* authorizationURL;
+@property (nonatomic, retain) NSString* authorizationMethod;
 @property (nonatomic, retain) NSURL* callbackURL;
-
+@property (nonatomic) BOOL authenticateImmediately;
 @property (nonatomic, retain) NSString* consumerKey;
 @property (nonatomic, retain) NSString* consumerSecret;
 @property (nonatomic, retain) NSString* token;

@@ -3,7 +3,7 @@
 //  OnSong
 //
 //  Created by Jason Kichline on 8/19/11.
-//  Copyright (c) 2011 andCulture. All rights reserved.
+//  Copyright (c) 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACFileTransferDetails.h"

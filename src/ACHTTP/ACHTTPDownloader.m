@@ -3,7 +3,7 @@
 //  Vocollect
 //
 //  Created by Jason Kichline on 8/17/11.
-//  Copyright (c) 2011 andCulture. All rights reserved.
+//  Copyright (c) 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACHTTPDownloader.h"
@@ -19,7 +19,7 @@
 
 @implementation ACHTTPDownloader
 
-@synthesize action, response, payload, url, delegate, username, password, connection = conn, modifiers, downloadPath;
+@synthesize action, response, payload, url, delegate, username, password, connection = conn, modifiers, downloadPath, filename;
 
 #pragma mark - Initialization
 
@@ -60,6 +60,15 @@
 -(NSString*)tempPath {
 	NSAssert(self.response != nil, @"Response must not be null");
 	return [self.downloadPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.download", [self.response suggestedFilename]]];
+}
+
+-(NSString*)filename {
+	if(filename == nil) {
+		NSAssert(self.response != nil, @"Response must not be null");
+		return [self.response suggestedFilename];
+	} else {
+		return filename;
+	}
 }
 
 -(NSString*)finalPath {
@@ -122,7 +131,7 @@
 	}
 	
 	// Create the connection
-	self.connection = [[NSURLConnection alloc] initWithRequest:request delegate: self];
+	self.connection = [[[NSURLConnection alloc] initWithRequest:request delegate: self] autorelease];
 	[ACHTTPRequest incrementNetworkActivity];
 	if(self.connection) {
 		receivedBytes = 0;

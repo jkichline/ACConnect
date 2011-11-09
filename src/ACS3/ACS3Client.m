@@ -3,7 +3,7 @@
 //  OnSong
 //
 //  Created by Jason Kichline on 3/28/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACS3Client.h"

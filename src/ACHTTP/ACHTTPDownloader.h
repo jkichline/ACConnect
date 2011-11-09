@@ -3,7 +3,7 @@
 //  Vocollect
 //
 //  Created by Jason Kichline on 8/17/11.
-//  Copyright (c) 2011 andCulture. All rights reserved.
+//  Copyright (c) 2011 Jason Kichline. All rights reserved.
 //
 
 @class ACHTTPDownloader;
@@ -30,6 +30,7 @@
 	int receivedBytes;
 	NSString* downloadPath;
 	NSFileHandle* handle;
+	NSString* filename;
 }
 
 @property (nonatomic, retain) NSURL* url;
@@ -41,6 +42,7 @@
 @property (nonatomic, retain) NSArray* modifiers;
 @property (nonatomic, retain) id payload;
 @property (nonatomic, retain) id delegate;
+@property (nonatomic, retain) NSString* filename;
 @property SEL action;
 
 @property (readonly) NSString* tempPath;

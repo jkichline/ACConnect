@@ -3,10 +3,11 @@
 //  ACOAuth
 //
 //  Created by Jason Kichline on 7/28/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACOAuthUtility.h"
+#import "NSData+ACOAuth.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <CommonCrypto/CommonHMAC.h>
 
@@ -32,13 +33,14 @@
 	CCHmac(kCCHmacAlgSHA1, cKey, strlen(cKey), cData, strlen(cData), cHMAC);
 	NSData *HMAC = [[NSData alloc] initWithBytes:cHMAC length:sizeof(cHMAC)];
 	NSString *hash = [HMAC base64Encoding];
+	[HMAC release];
 	return hash;
 }
 
 +(NSString*)webEncode:(id)input {
 	NSString* unencodedString = [NSString stringWithFormat:@"%@", input];
 	NSString* encodedString = (NSString *)CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)unencodedString, (CFStringRef)@"-._~", (CFStringRef)@"!*'();:@&=+$,/?%#[]", kCFStringEncodingUTF8);
-	return encodedString;
+	return [encodedString autorelease];
 }
 
 +(NSString*)webDecode:(id)input {

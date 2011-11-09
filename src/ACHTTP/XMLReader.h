@@ -4,7 +4,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface XMLReader : NSObject {
+@interface XMLReader : NSObject <NSXMLParserDelegate> {
     NSMutableArray *dictionaryStack;
     NSMutableString *textInProgress;
     NSError **errorPointer;

@@ -3,22 +3,22 @@
 //  OnSong
 //
 //  Created by Jason Kichline on 8/16/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import "ACFileTransferDetails.h"
 #import <GameKit/GameKit.h>
 
-extern NSString* const ACFileTransferFileSent;
-extern NSString* const ACFileTransferFileBegan;
-extern NSString* const ACFileTransferFileReceived;
-extern NSString* const ACFileTransferFileFailed;
-extern NSString* const ACFileTransferPacketSent;
-extern NSString* const ACFileTransferPacketReceived;
-extern NSString* const ACFileTransferPacketFailed;
-extern NSString* const ACFileTransferAvailabilityChanged;
-extern NSString* const ACFileTransferUpdatedPeers;
+extern NSString* const ACFileTransferFileSentNotification;
+extern NSString* const ACFileTransferFileBeganNotification;
+extern NSString* const ACFileTransferFileReceivedNotification;
+extern NSString* const ACFileTransferFileFailedNotification;
+extern NSString* const ACFileTransferPacketSentNotification;
+extern NSString* const ACFileTransferPacketReceivedNotification;
+extern NSString* const ACFileTransferPacketFailedNotification;
+extern NSString* const ACFileTransferAvailabilityChangedNotification;
+extern NSString* const ACFileTransferUpdatedPeersNotification;
 
 @class ACFileTransfer;
 
@@ -62,6 +62,7 @@ extern NSString* const ACFileTransferUpdatedPeers;
 @property (readonly) BOOL enabled;
 @property (readonly) int peersConnected;
 
+-(id)initWithSessionID:(NSString*)sessionID;
 -(id)initWithDelegate:(id<ACFileTransferDelegate>)delegate;
 -(id)initWithData:(NSData*)data;
 -(id)initWithContentsOfFile:(NSString*)filepath;
@@ -71,6 +72,7 @@ extern NSString* const ACFileTransferUpdatedPeers;
 
 -(BOOL)sendFile:(NSString*)filepath toPeers:(NSArray*)peers;
 -(BOOL)sendData:(NSData*)data toPeers:(NSArray*)peers;
+-(BOOL)sendData:(NSData*)data withFilename:(NSString*)filename toPeers:(NSArray*)peers;
 -(BOOL)sendToPeers:(NSArray*)peers;
 
 @end

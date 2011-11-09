@@ -3,7 +3,7 @@
 //  ACConnect
 //
 //  Created by Jason Kichline on 4/5/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

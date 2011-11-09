@@ -3,7 +3,7 @@
 //  ACOAuth
 //
 //  Created by Jason Kichline on 8/3/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACKeychain.h"
@@ -18,6 +18,7 @@
 - (NSMutableDictionary *)dictionaryToSecItemFormat:(NSDictionary *)dictionaryToConvert;
 // Method used to write data to the keychain:
 - (void)writeToKeychain;
+-(NSString*)fetchStatus:(OSStatus)status;
 
 @end
 
@@ -26,48 +27,54 @@
 //Synthesize the getter and setter:
 @synthesize keychainData, genericPasswordQuery;
 
++(ACKeychain*)keychainWithIdentifier:(NSString*)identifier {
+	return [[[self alloc] initWithIdentifier:identifier] autorelease];
+}
+
 -(id)initWithIdentifier:(NSString*)_identifier {
     if ((self = [super init])) {
+		if(_identifier != nil) {
 		
-		// Set the identifier
-		identifier = [_identifier retain];
-        
-        OSStatus keychainErr = noErr;
-        // Set up the keychain search dictionary:
-        genericPasswordQuery = [[NSMutableDictionary alloc] init];
-        // This keychain item is a generic password.
-        [genericPasswordQuery setObject:(id)kSecClassGenericPassword
-                                 forKey:(id)kSecClass];
-        // The kSecAttrGeneric attribute is used to store a unique string that is used
-        // to easily identify and find this keychain item. The string is first
-        // converted to an NSData object:
-        NSData *keychainItemID = [NSData dataWithBytes:[identifier UTF8String]
-                                                length:strlen((const char *)[identifier UTF8String])];
-        [genericPasswordQuery setObject:keychainItemID forKey:(id)kSecAttrGeneric];
-        // Return the attributes of the first match only:
-        [genericPasswordQuery setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];
-        // Return the attributes of the keychain item (the password is
-        //  acquired in the secItemFormatToDictionary: method):
-        [genericPasswordQuery setObject:(id)kCFBooleanTrue
-                                 forKey:(id)kSecReturnAttributes];
-        
-        //Initialize the dictionary used to hold return data from the keychain:
-        NSMutableDictionary *outDictionary = nil;
-        // If the keychain item exists, return the attributes of the item: 
-        keychainErr = SecItemCopyMatching((CFDictionaryRef)genericPasswordQuery,
-                                          (CFTypeRef *)&outDictionary);
-        if (keychainErr == noErr) {
-            // Convert the data dictionary into the format used by the view controller:
-            self.keychainData = [self secItemFormatToDictionary:outDictionary];
-        } else if (keychainErr == errSecItemNotFound) {
-            // Put default values into the keychain if no matching
-            // keychain item is found:
-            [self reset];
-        } else {
-            // Any other error is unexpected.
-            NSAssert(NO, @"Serious error.\n");
-        }
-        [outDictionary release];
+			// Set the identifier
+			identifier = [_identifier retain];
+			
+			OSStatus keychainErr = noErr;
+			// Set up the keychain search dictionary:
+			genericPasswordQuery = [[NSMutableDictionary alloc] init];
+			// This keychain item is a generic password.
+			[genericPasswordQuery setObject:(id)kSecClassGenericPassword
+									 forKey:(id)kSecClass];
+			// The kSecAttrGeneric attribute is used to store a unique string that is used
+			// to easily identify and find this keychain item. The string is first
+			// converted to an NSData object:
+			NSData *keychainItemID = [NSData dataWithBytes:[identifier UTF8String]
+													length:strlen((const char *)[identifier UTF8String])];
+			[genericPasswordQuery setObject:keychainItemID forKey:(id)kSecAttrGeneric];
+			// Return the attributes of the first match only:
+			[genericPasswordQuery setObject:(id)kSecMatchLimitOne forKey:(id)kSecMatchLimit];
+			// Return the attributes of the keychain item (the password is
+			//  acquired in the secItemFormatToDictionary: method):
+			[genericPasswordQuery setObject:(id)kCFBooleanTrue
+									 forKey:(id)kSecReturnAttributes];
+			
+			//Initialize the dictionary used to hold return data from the keychain:
+			NSMutableDictionary *outDictionary = nil;
+			// If the keychain item exists, return the attributes of the item: 
+			keychainErr = SecItemCopyMatching((CFDictionaryRef)genericPasswordQuery,
+											  (CFTypeRef *)&outDictionary);
+			if (keychainErr == noErr) {
+				// Convert the data dictionary into the format used by the view controller:
+				self.keychainData = [self secItemFormatToDictionary:outDictionary];
+			} else if (keychainErr == errSecItemNotFound) {
+				// Put default values into the keychain if no matching
+				// keychain item is found:
+				[self reset];
+			} else {
+				// Any other error is unexpected.
+				NSAssert(NO, @"Serious error.\n");
+			}
+			[outDictionary release];
+		}
     }
     return self;
 }

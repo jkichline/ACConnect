@@ -3,7 +3,7 @@
 //  ACOAuth
 //
 //  Created by Jason Kichline on 7/29/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACOAuthConfiguration.h"
@@ -12,8 +12,9 @@
 @implementation ACOAuthConfiguration
 
 @synthesize baseURL, requestTokenURL, accessTokenURL, authorizationURL, callbackURL;
+@synthesize accessTokenMethod, requestTokenMethod, authorizationMethod;
 @synthesize consumerKey, consumerSecret, token, tokenSecret, verifier, signatureMethod;
-@synthesize identifier, tintColor, parentViewController, parameters, css, javascript;
+@synthesize identifier, tintColor, parentViewController, parameters, css, javascript, authenticateImmediately;
 
 #pragma mark -
 #pragma mark Initialization
@@ -21,6 +22,9 @@
 -(id)init {
 	self = [super init];
 	if(self) {
+		self.accessTokenMethod = @"POST";
+		self.requestTokenMethod = @"POST";
+		self.authorizationMethod = @"GET";
 		self.signatureMethod = ACOAuthSignatureMethodHMAC_SHA1;
 	}
 	return self;

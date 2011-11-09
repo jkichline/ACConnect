@@ -3,7 +3,7 @@
 //  ACWebDAVTest
 //
 //  Created by Jason Kichline on 8/20/10.
-//  Copyright 2010 andCulture. All rights reserved.
+//  Copyright 2010 Jason Kichline. All rights reserved.
 //
 
 #import "ACWebDAVLock.h"

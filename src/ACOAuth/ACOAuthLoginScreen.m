@@ -3,7 +3,7 @@
 //  ACOAuth
 //
 //  Created by Jason Kichline on 7/29/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACOAuthLoginScreen.h"
@@ -68,13 +68,11 @@
 	webView.scalesPageToFit = YES;
 	webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview:webView];
-	
-	// Authorize if we haven't yet
-	[self authorize];
 }
 
 -(void)viewWillAppear:(BOOL)animated {
 	[super viewWillAppear:animated];
+	[self authorize];
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
@@ -85,8 +83,11 @@
 #pragma mark Toolbar Methods
 
 -(void)close {
-	[self dismissModalViewControllerAnimated:YES];
-	[self.navigationController popViewControllerAnimated:YES];
+	if(self.navigationController) {
+		[self.navigationController popViewControllerAnimated:YES];
+	} else {
+		[self dismissModalViewControllerAnimated:YES];
+	}
 }
 
 #pragma mark -
@@ -100,19 +101,19 @@
 	}
 	
 	// Create a new URL
-	NSMutableString* url = [NSMutableString stringWithString:[self.configuration.authorizationURL absoluteString]];
-	
-	// Append to the query string
-	if([url rangeOfString:@"?"].length > 0) {
-		[url appendString:@"&"];
-	} else {
-		[url appendString:@"?"];
+	NSString* qs = [NSString stringWithFormat:@"oauth_token=%@&oauth_callback=%@", [ACOAuthUtility webEncode:self.configuration.token], [ACOAuthUtility webEncode:@"close:"]];
+	NSURL* url = self.configuration.authorizationURL;
+	if(![self.configuration.authorizationMethod isEqualToString:@"POST"]) {
+		url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@", self.configuration.authorizationURL.absoluteString, ([self.configuration.authorizationURL.absoluteString rangeOfString:@"?"].length > 0) ? @"&" : @"?", qs]];
 	}
-	[url appendFormat:@"oauth_token=%@&oauth_callback=%@", [ACOAuthUtility webEncode:self.configuration.token], [ACOAuthUtility webEncode:@"close:"]];
+	NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+	if([self.configuration.authorizationMethod isEqualToString:@"POST"]) {
+		request.HTTPBody = [qs dataUsingEncoding:NSUTF8StringEncoding];
+	}
 	
 	// Load the request
 	NSLog(@"Authorize URL: %@", url);
-	[webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
+	[webView loadRequest:request];
 	return YES;
 }
 
@@ -126,7 +127,7 @@
 		[[NSNotificationCenter defaultCenter] postNotificationName:ACOAuthSessionAuthorizationVerified object:self userInfo:[NSDictionary dictionaryWithObject:self.configuration forKey:@"configuration"]];
 		[self close];
 	}
-	if([[parameters objectForKey:@"close"] boolValue]) {
+	if([[parameters objectForKey:@"close"] boolValue] || [request.URL.absoluteString hasPrefix:@"close:"]) {
 		[self close];
 	}
 	return YES;

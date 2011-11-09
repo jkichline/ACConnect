@@ -3,13 +3,13 @@
 //  ACWebDAVTest
 //
 //  Created by Jason Kichline on 8/19/10.
-//  Copyright 2010 andCulture. All rights reserved.
+//  Copyright 2010 Jason Kichline. All rights reserved.
 //
 
 #import "ACWebDAVItem.h"
 #import "ACWebDAVCollection.h"
 #import "ACWebDAVFile.h"
-#import "ACWebDAVLocation.h";
+#import "ACWebDAVLocation.h"
 #import "ACWebDAVLock.h"
 
 #import "ACWebDAVPropertyRequest.h"

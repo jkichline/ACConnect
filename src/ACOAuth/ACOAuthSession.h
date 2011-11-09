@@ -3,7 +3,7 @@
 //  ACOAuth
 //
 //  Created by Jason Kichline on 7/28/11.
-//  Copyright 2011 andCulture. All rights reserved.
+//  Copyright 2011 Jason Kichline. All rights reserved.
 //
 
 extern NSString* const ACOAuthSessionRequestTokenReceived;
@@ -32,6 +32,8 @@ extern NSString* const ACOAuthSessionAuthorizationCanceled;
 -(BOOL)requestToken;
 -(BOOL)authorize;
 -(BOOL)accessToken;
+
 -(void)signRequest:(NSMutableURLRequest*)request;
+-(void)signRequest:(NSMutableURLRequest*)request useAuthorizationHeader:(BOOL)useAuthorizationHeader;
 
 @end
