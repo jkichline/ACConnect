@@ -1,5 +1,5 @@
 //
-//  CXMLNode_XPathExtensions.h
+//  CXMLElement_CreationExtensions.m
 //  TouchCode
 //
 //  Created by Jonathan Wight on 04/01/08.
@@ -29,11 +29,31 @@
 //  authors and should not be interpreted as representing official policies, either expressed
 //  or implied, of toxicsoftware.com.
 
-#import "CXMLNode.h"
+#import "CXMLElement_CreationExtensions.h"
 
-@interface CXMLNode (CXMLNode_XPathExtensions)
+@implementation CXMLElement (CXMLElement_CreationExtensions)
 
-- (NSArray *)nodesForXPath:(NSString *)xpath namespaceMappings:(NSDictionary *)inNamespaceMappings error:(NSError **)error;
-- (CXMLNode *)nodeForXPath:(NSString *)xpath error:(NSError **)outError;
+- (void)addChild:(CXMLNode *)inNode
+{
+NSAssert(inNode->_node->doc == NULL, @"Cannot addChild with a node that already is part of a document. Copy it first!");
+NSAssert(self->_node != NULL, @"_node should not be null");
+NSAssert(inNode->_node != NULL, @"_node should not be null");
+xmlAddChild(self->_node, inNode->_node);
+// now XML element is tracked by document, do not release on dealloc
+inNode->_freeNodeOnRelease = NO;
+}
+
+- (void)addNamespace:(CXMLNode *)inNamespace
+{
+xmlSetNs(self->_node, (xmlNsPtr)inNamespace->_node);
+}
+
+- (void)setStringValue:(NSString *)inStringValue
+{
+NSAssert(inStringValue != NULL, @"CXMLElement setStringValue should not be null");
+xmlNodePtr theContentNode = xmlNewText((const xmlChar *)[inStringValue UTF8String]);
+NSAssert(self->_node != NULL, @"_node should not be null");
+xmlAddChild(self->_node, theContentNode);
+}
 
 @end

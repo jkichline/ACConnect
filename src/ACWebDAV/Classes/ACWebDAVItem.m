@@ -117,7 +117,7 @@
 	ACWebDAVPropertyRequest* request = [ACWebDAVPropertyRequest requestWithLocation:l];
 	request.depth = 0;
 	request.properties = ACWebDAVPropertyAllProperties;
-	request.delegate = self;
+	request.delegate = (id<ACWebDAVPropertyRequestDelegate>)self;
 	[request start];
 }
 

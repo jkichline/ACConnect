@@ -71,6 +71,8 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 	
 	// Check to make sure we have a valid configuration
 	if(self.configuration == nil || [self.configuration isValid] == NO) { return NO; }
+	self.configuration.token = nil;
+	self.configuration.tokenSecret = nil;
 
 	// Create and sign the request
 	NSMutableURLRequest* request = [[[NSMutableURLRequest alloc] initWithURL:self.configuration.requestTokenURL] autorelease];
@@ -104,32 +106,69 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 
 -(BOOL)authorize {
 	
+	// Validate that we can authorize
+	if(self.configuration == nil || self.configuration.authorizationURL == nil || self.configuration.token == nil) {
+		return NO;
+	}
+	
 	// Check to make sure we have a valid configuration
 	if(self.configuration != nil && self.configuration.authorizationURL != nil && self.configuration.parentViewController != nil) {
+		if(self.configuration.authorizeExternally) {
+			NSURL* url = self.configuration.authorizationURL;
+			if(self.configuration.callbackURL != nil) {
+				url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?oauth_token=%@&oauth_callback=%@",
+											self.configuration.authorizationURL, 
+											[ACOAuthUtility webEncode:self.configuration.token],
+											[ACOAuthUtility webEncode:self.configuration.callbackURL]]];
+			}
+			[[UIApplication sharedApplication] openURL:url];
+		} else {
+
+			// Create the login screen
+			ACOAuthLoginScreen* login = [[ACOAuthLoginScreen alloc] initWithConfiguration:self.configuration];
 		
-		// Create the login screen
-		ACOAuthLoginScreen* login = [[ACOAuthLoginScreen alloc] initWithConfiguration:self.configuration];
-	
-		// If we have a navigation controller, push it
-		if([self.configuration.parentViewController isKindOfClass:[UINavigationController class]]) {
-			[(UINavigationController*)self.configuration.parentViewController pushViewController:login animated:YES];
+			// If we have a navigation controller, push it
+			if([self.configuration.parentViewController isKindOfClass:[UINavigationController class]]) {
+				[(UINavigationController*)self.configuration.parentViewController pushViewController:login animated:YES];
+			}
+			
+			// Otherwise, create a navigation controller and pop it up modally
+			else {
+				UINavigationController* nav = [[UINavigationController alloc] initWithRootViewController:login];
+				nav.navigationBar.tintColor = self.configuration.tintColor;
+				nav.modalPresentationStyle = UIModalPresentationFormSheet;
+				[self.configuration.parentViewController presentModalViewController:nav animated:YES];
+				[nav release];
+			}
+			
+			// Release the login screen
+			[login release];
 		}
-		
-		// Otherwise, create a navigation controller and pop it up modally
-		else {
-			UINavigationController* nav = [[UINavigationController alloc] initWithRootViewController:login];
-			nav.navigationBar.tintColor = self.configuration.tintColor;
-			nav.modalPresentationStyle = UIModalPresentationFormSheet;
-			[self.configuration.parentViewController presentModalViewController:nav animated:YES];
-			[nav release];
-		}
-		
-		// Release the login screen
-		[login release];
 		return YES;
 	}
 	return NO;
 }
+
+-(BOOL)handleAuthorization:(NSURL*)url {
+	if([url.absoluteString hasPrefix:self.configuration.callbackURL.absoluteString]) {
+		NSDictionary* parameters = [ACOAuthUtility dictionaryFromQueryString:url.query];
+		BOOL isVerified = NO;
+		if([parameters objectForKey:@"oauth_verifier"] != nil) {
+			self.configuration.verifier = [parameters objectForKey:@"oauth_verifier"];
+			isVerified = YES;
+		}
+		if([parameters objectForKey:@"oauth_token"] != nil) {
+			self.configuration.token = [parameters objectForKey:@"oauth_token"];
+			isVerified = YES;
+		}
+		if(isVerified) {
+			[[NSNotificationCenter defaultCenter] postNotificationName:ACOAuthSessionAuthorizationVerified object:self userInfo:[NSDictionary dictionaryWithObject:self.configuration forKey:@"configuration"]];
+		}
+		return YES;
+	}
+	return NO;
+}
+
 
 #pragma mark -
 #pragma mark Handle Notifications
@@ -169,13 +208,19 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 #pragma mark Sign Requests
 
 -(void)signRequest:(NSMutableURLRequest*)request {
-	return [self signRequest:request useAuthorizationHeader:NO];
+	return [self signRequest:request useAuthorizationHeader:self.configuration.useAuthorizationHeader];
 }
 
 -(void)signRequest:(NSMutableURLRequest*)request useAuthorizationHeader:(BOOL)useAuthorizationHeader {
 	
+	// See if we have a valid configuation. If not, warn the developer...
+	if([self.configuration isValid] == NO) {
+		NSLog(@"%@", NSLocalizedString(@"The OAuth configuration is missing parameters. The request was not signed.", @""));
+		return;
+	}
+	
 	// Generate a nonce
-	NSString* nonce = [ACOAuthUtility MD5:[NSString stringWithFormat:@"%d", [[NSDate date] timeIntervalSince1970]]];
+	NSString* nonce = [ACOAuthUtility MD5:[NSString stringWithFormat:@"%d", (int)[[NSDate date] timeIntervalSince1970]]];
 	
 	// Determine the signature method string
 	NSString* signatureMethod = @"HMAC-SHA1";
@@ -217,8 +262,9 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 	}
 	
 	// Add for POST variables, if applicable
+	NSString* postAsString = nil;
 	if([[request HTTPMethod] isEqualToString:@"POST"] && [request HTTPBody] != nil) {
-		NSString* postAsString = [[[NSString alloc] initWithData:[request HTTPBody] encoding:NSUTF8StringEncoding] autorelease];
+		postAsString = [[[NSString alloc] initWithData:[request HTTPBody] encoding:NSUTF8StringEncoding] autorelease];
 		NSDictionary* postParameters = [ACOAuthUtility dictionaryFromQueryString:postAsString];
 		for(NSString* name in [postParameters allKeys]) {
 			[parameters setObject:[postParameters objectForKey:name] forKey:name];
@@ -280,13 +326,27 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 				[query appendFormat:@"%@=%@", [ACOAuthUtility webEncode:key], [ACOAuthUtility webEncode:[parameters objectForKey:key]]];
 			}
 		}
-
-		if([[request HTTPMethod] isEqualToString:@"GET"]) {
-			[request setURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", url, query]]];
-		} else {
-			[request addValue:auth forHTTPHeaderField:@"Authorization"];
+		
+		// Determine the content type of the post
+		NSString* contentType = [request.allHTTPHeaderFields objectForKey:@"content-type"];
+		
+		// If this is a POST, then send parameters in the form data
+		if([request.HTTPMethod isEqualToString:@"POST"] && ([contentType isEqualToString:@"application/x-www-form-urlencoded"] || [contentType isEqualToString:@"multipart/form-data"])) {
+			if(postAsString != nil) {
+				request.HTTPBody = [[NSString stringWithFormat:@"%@&%@", postAsString, query] dataUsingEncoding:NSUTF8StringEncoding];
+			} else {
+				request.HTTPBody = [query dataUsingEncoding:NSUTF8StringEncoding];
+			}
 		}
-	} else {
+
+		// Otherwise, add to the URL
+		else {
+			[request setURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@?%@", url, query]]];
+		}
+	}
+
+	// Use the authorization header
+	else {
 		[request addValue:auth forHTTPHeaderField:@"Authorization"];
 	}
 	
@@ -318,17 +378,23 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 	// Get the content
 	NSString* content = [[[NSString alloc] initWithData:self.receivedData encoding:NSUTF8StringEncoding] autorelease];
 	
+	// If we don't have name/value pairs
+	
 //	NSLog(@"URL: %@\nContent: %@", [self.response URL], content);
 	
 	// Parse into a dictionary
 	NSMutableDictionary* parameters = [ACOAuthUtility dictionaryFromQueryString:content];
 	
 	// Set the tokens
-	self.configuration.token = [parameters objectForKey:@"oauth_token"];
-	[parameters removeObjectForKey:@"oauth_token"];
+	if([parameters objectForKey:@"oauth_token"]) {
+		self.configuration.token = [parameters objectForKey:@"oauth_token"];
+		[parameters removeObjectForKey:@"oauth_token"];
+	}
 
-	self.configuration.tokenSecret = [parameters objectForKey:@"oauth_token_secret"];
-	[parameters removeObjectForKey:@"oauth_token_secret"];
+	if([parameters objectForKey:@"oauth_token_secret"]) {
+		self.configuration.tokenSecret = [parameters objectForKey:@"oauth_token_secret"];
+		[parameters removeObjectForKey:@"oauth_token_secret"];
+	}
 
 	self.configuration.parameters = [NSDictionary dictionaryWithDictionary:parameters];
 	
@@ -336,11 +402,18 @@ NSString* const ACOAuthSessionAuthorizationCanceled = @"ACOAuthSessionAuthorizat
 	NSString* responseURL = [[self.response URL] absoluteString];
 	if([responseURL hasPrefix:[self.configuration.requestTokenURL absoluteString]]) {
 		[[NSNotificationCenter defaultCenter] postNotificationName:ACOAuthSessionRequestTokenReceived object:self userInfo:[NSDictionary dictionaryWithObject:self.configuration forKey:@"configuration"]];
+		return;
 	}
 	
 	// Post a notification for access token
 	if([responseURL hasPrefix:[self.configuration.accessTokenURL absoluteString]]) {
 		[[NSNotificationCenter defaultCenter] postNotificationName:ACOAuthSessionAccessTokenReceived object:self userInfo:[NSDictionary dictionaryWithObject:self.configuration forKey:@"configuration"]];
+		return;
+	}
+	
+	// If we get this far, and the content has no pairs, then show an error message
+	if([content rangeOfString:@"="].length == 0) {
+		[[[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Authentication Error", @"") message:NSLocalizedString(content, @"") delegate:nil cancelButtonTitle:NSLocalizedString(@"Close", @"") otherButtonTitles:nil] autorelease] show];
 	}
 }
 

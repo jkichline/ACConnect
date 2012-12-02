@@ -12,8 +12,8 @@
 @implementation ACOAuthConfiguration
 
 @synthesize baseURL, requestTokenURL, accessTokenURL, authorizationURL, callbackURL;
-@synthesize accessTokenMethod, requestTokenMethod, authorizationMethod;
-@synthesize consumerKey, consumerSecret, token, tokenSecret, verifier, signatureMethod;
+@synthesize accessTokenMethod, requestTokenMethod, authorizationMethod, authorizeExternally;
+@synthesize consumerKey, consumerSecret, token, tokenSecret, verifier, signatureMethod, useAuthorizationHeader;
 @synthesize identifier, tintColor, parentViewController, parameters, css, javascript, authenticateImmediately;
 
 #pragma mark -
@@ -25,6 +25,7 @@
 		self.accessTokenMethod = @"POST";
 		self.requestTokenMethod = @"POST";
 		self.authorizationMethod = @"GET";
+		self.useAuthorizationHeader = YES;
 		self.signatureMethod = ACOAuthSignatureMethodHMAC_SHA1;
 	}
 	return self;
@@ -51,6 +52,10 @@
 	return (self.consumerKey != nil && self.consumerSecret != nil && self.requestTokenURL != nil && self.accessTokenURL != nil);
 }
 
+-(BOOL)isAuthenticated {
+	return (self.consumerKey != nil && self.consumerSecret != nil && self.token != nil && self.tokenSecret != nil);
+}
+
 -(NSURL*)requestTokenURL {
 	if(requestTokenURL == nil && baseURL != nil) {
 		self.requestTokenURL = [baseURL URLByAppendingPathComponent:@"request_token"];
@@ -70,6 +75,27 @@
 		self.authorizationURL = [baseURL URLByAppendingPathComponent:@"authorize"];
 	}
 	return authorizationURL;
+}
+
+-(NSURL*)callbackURL {
+	
+	// Return a callback URL if we have one
+	if(callbackURL != nil) { return callbackURL; }
+	
+	// If we don't, create one
+	NSString* scheme = nil;
+	NSArray* urlTypes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleURLTypes"];
+	if(urlTypes != nil && urlTypes.count > 0) {
+		NSDictionary* urlType = [urlTypes objectAtIndex:0];
+		NSArray* urlSchemes = [urlType objectForKey:@"CFBundleURLSchemes"];
+		if(urlSchemes != nil && urlSchemes.count > 0) {
+			scheme = [urlSchemes objectAtIndex:0];
+		}
+	}
+	
+	// If we have no scheme, fail
+	NSAssert((scheme != nil), NSLocalizedString(@"Please add a URL scheme to your application info.plist", @""));
+	return [NSURL URLWithString:[NSString stringWithFormat:@"%@://GetSatisfactionAuthorized", scheme]];
 }
 
 -(NSString*)signatureKey {

@@ -38,4 +38,5 @@
 - (NSError *)closeStream;
 
 @property (assign, readonly) BOOL streamReady;
+
 @end

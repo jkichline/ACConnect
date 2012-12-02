@@ -35,5 +35,6 @@ extern NSString* const ACOAuthSessionAuthorizationCanceled;
 
 -(void)signRequest:(NSMutableURLRequest*)request;
 -(void)signRequest:(NSMutableURLRequest*)request useAuthorizationHeader:(BOOL)useAuthorizationHeader;
+-(BOOL)handleAuthorization:(NSURL*)url;
 
 @end

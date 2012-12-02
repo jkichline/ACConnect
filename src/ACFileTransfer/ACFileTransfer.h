@@ -77,6 +77,6 @@ extern NSString* const ACFileTransferUpdatedPeersNotification;
 
 @end
 
-@interface NSData (MD5)
+@interface NSData (AC_MD5)
 -(NSString*)md5;
 @end

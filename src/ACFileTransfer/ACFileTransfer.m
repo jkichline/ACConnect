@@ -8,6 +8,7 @@
 
 #import "ACFileTransfer.h"
 #import "ACFileTransferDetails.h"
+#import <CommonCrypto/CommonDigest.h>
 
 #define _GNU_SOURCE
 #define MAX_PACKET_SIZE 65536	
@@ -69,6 +70,11 @@ NSString* const ACFileTransferUpdatedPeersNotification = @"ACFileTransferUpdated
 }
 
 -(id)init {
+	NSString* sessionID = [NSString stringWithFormat:@"%@.%@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleIdentifier"], @"filetransfer"];
+	return [self initWithSessionID:sessionID];
+}
+
+-(id)initWithSessionID:(NSString *)sessionID {
 	self = [super init];
 	if(self) {
 		// Set up if it's enabled
@@ -78,7 +84,6 @@ NSString* const ACFileTransferUpdatedPeersNotification = @"ACFileTransferUpdated
 		peersConnected = 0;
 		
 		// Create the session
-		NSString* sessionID = [NSString stringWithFormat:@"%@.%@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleIdentifier"], @"filetransfer"];
 		if(logging) { NSLog(@"Using session ID: %@", sessionID); }
 		session = [[GKSession alloc] initWithSessionID:sessionID displayName:nil sessionMode:GKSessionModePeer];
 		[self connect];
@@ -189,6 +194,7 @@ NSString* const ACFileTransferUpdatedPeersNotification = @"ACFileTransferUpdated
 
 -(BOOL)sendData:(NSData *)data toPeers:(NSArray *)_peers {
 	self.contents = data;
+	self.filename = nil;
 	return [self sendToPeers:_peers];
 }
 
@@ -421,7 +427,7 @@ NSString* const ACFileTransferUpdatedPeersNotification = @"ACFileTransferUpdated
 
 @end
 
-@implementation NSData (MD5)
+@implementation NSData (AC_MD5)
 -(NSString*)md5 {
     unsigned char result[16];
     CC_MD5(self.bytes, self.length, result);

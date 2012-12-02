@@ -52,15 +52,9 @@
 	if(self.networkStream != nil) { return; }
 	
 	// Create our working variables
-	NSURL* url;
+	NSURL* url = nil;
 	BOOL success;
 	CFReadStreamRef ftpStream;
-	
-	// Retrieve and check the URL
-	success = (url != nil);
-	if(success == NO) {
-		[self didFail:@"Invalid FTP location"]; return;
-	}
 	
 	// Determine the URL dynamically
 	if([self.location isKindOfClass:[NSURL class]]) {
@@ -71,6 +65,12 @@
 	
 	if([[url absoluteString] hasSuffix:@"/"] == NO) {
 		url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/", [url absoluteString]]];
+	}
+	
+	// Retrieve and check the URL
+	success = (url != nil);
+	if(success == NO) {
+		[self didFail:@"Invalid FTP location"]; return;
 	}
 	
 	// Set the directory URL

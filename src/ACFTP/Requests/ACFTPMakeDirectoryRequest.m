@@ -48,7 +48,7 @@
 	if(self.networkStream != nil) { return; }
 	
 	// Create our working variables
-	NSURL* url;
+	NSURL* url = nil;
 	BOOL success;
 	CFWriteStreamRef ftpStream;
 	

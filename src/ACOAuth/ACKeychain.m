@@ -88,20 +88,17 @@
 }
 
 // Implement the setObject:forKey method, which writes attributes to the keychain:
-- (void)setObject:(id)inObject forKey:(id)key
-{
-    if (inObject == nil) return;
-    id currentObject = [keychainData objectForKey:key];
-    if (![currentObject isEqual:inObject])
-    {
-        [keychainData setObject:inObject forKey:key];
-        [self writeToKeychain];
-    }
+- (void)setObject:(id)inObject forKey:(id)key {
+	if(inObject == nil) { return; }
+	id currentObject = [keychainData objectForKey:key];
+	if(![currentObject isEqual:inObject]) {
+		[keychainData setObject:inObject forKey:key];
+		[self writeToKeychain];
+	}
 }
 
 // Implement the objectForKey: method, which reads an attribute value from a dictionary:
-- (id)objectForKey:(id)key
-{
+-(id)objectForKey:(id)key {
     return [keychainData objectForKey:key];
 }
 
@@ -113,7 +110,7 @@
 	OSStatus junk = noErr;
     if (!keychainData) //Allocate the keychainData dictionary if it doesn't exist yet.
     {
-        self.keychainData = [[NSMutableDictionary alloc] init];
+        self.keychainData = [NSMutableDictionary dictionary];
     }
     else if (keychainData)
     {
@@ -157,7 +154,7 @@
 	else if(status == errSecDecode)
 		return @"unable to decode data";
 	else
-		return [NSString stringWithFormat:@"%d", status];
+		return [NSString stringWithFormat:@"%d", (int)status];
 }
 
 // Implement the dictionaryToSecItemFormat: method, which takes the attributes that

@@ -36,7 +36,8 @@ typedef enum {
 	ACHTTPRequestMethodHead,
 	ACHTTPRequestMethodPut,
 	ACHTTPRequestMethodDelete,
-	ACHTTPRequestMethodTrace
+	ACHTTPRequestMethodTrace,
+	ACHTTPRequestMethodCreate
 } ACHTTPRequestMethod;
 
 @interface ACHTTPRequest : NSObject {
@@ -54,6 +55,7 @@ typedef enum {
 	id result;
 	SEL action;
 	NSArray* modifiers;
+	BOOL cacheless;
 }
 
 @property (nonatomic, retain) NSURL* url;
@@ -70,30 +72,32 @@ typedef enum {
 @property ACHTTPPostContentType contentType;
 @property (nonatomic, retain) NSArray* modifiers;
 @property SEL action;
+@property (nonatomic) BOOL cacheless;
 
 -(BOOL)cancel;
 -(void)send;
 -(void)getUrl:(id)value;
 -(void)handleError:(NSError *)error;
 +(id)get:(id)url;
-+(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate;
-+(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers;
-+(void)get:(id)url delegate: (id) delegate action:(SEL)action;
-+(void)get:(id)url delegate: (id) delegate action:(SEL)action modifiers:(NSArray*)modifiers;
-+(void)post:(id)url data:(id)data delegate: (id<ACHTTPRequestDelegate>) delegate;
-+(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate: (id<ACHTTPRequestDelegate>) delegate;
-+(void)post:(id)url data:(id)data delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers;
-+(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers;
-+(void)post:(id)url data:(id)data delegate: (id) delegate action:(SEL)action;
-+(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate: (id) delegate action:(SEL)action;
-+(void)post:(id)url data:(id)data delegate: (id) delegate action:(SEL)action modifiers:(NSArray*)modifiers;
-+(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate: (id) delegate action:(SEL)action modifiers:(NSArray*)modifiers;
++(ACHTTPRequest*)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate;
++(ACHTTPRequest*)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers;
++(ACHTTPRequest*)get:(id)url delegate: (id) delegate action:(SEL)action;
++(ACHTTPRequest*)get:(id)url delegate: (id) delegate action:(SEL)action modifiers:(NSArray*)modifiers;
++(ACHTTPRequest*)post:(id)url data:(id)data delegate: (id<ACHTTPRequestDelegate>) delegate;
++(ACHTTPRequest*)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate: (id<ACHTTPRequestDelegate>) delegate;
++(ACHTTPRequest*)post:(id)url data:(id)data delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers;
++(ACHTTPRequest*)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers;
++(ACHTTPRequest*)post:(id)url data:(id)data delegate: (id) delegate action:(SEL)action;
++(ACHTTPRequest*)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate: (id) delegate action:(SEL)action;
++(ACHTTPRequest*)post:(id)url data:(id)data delegate: (id) delegate action:(SEL)action modifiers:(NSArray*)modifiers;
++(ACHTTPRequest*)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate: (id) delegate action:(SEL)action modifiers:(NSArray*)modifiers;
 -(void)call:(NSURLRequest*)request;
 
 +(ACHTTPRequest*)request;
 +(ACHTTPRequest*)requestWithDelegate:(id)delegate;
 +(ACHTTPRequest*)requestWithDelegate:(id)delegate action:(SEL)action;
 
++(NSString*)encodeString:(NSString*)string withEncoding:(NSStringEncoding)encoding;
 +(NSString*)convertDictionaryToJSON:(NSDictionary*)d;
 +(NSString*)convertDictionaryToXML:(NSDictionary*)d;
 +(NSString*)convertDictionaryToURLEncoded:(NSDictionary*)d;

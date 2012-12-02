@@ -3,7 +3,7 @@
 //  ACConnect
 //
 //  Created by Jason Kichline on 9/3/11.
-//  Copyright (c) 2011 andCulture. All rights reserved.
+//  Copyright (c) 2011 Jason Kichline. All rights reserved.
 //
 
 #import "ACHTTPAdditions.h"

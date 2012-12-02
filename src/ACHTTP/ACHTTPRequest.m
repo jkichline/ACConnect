@@ -11,6 +11,7 @@
 #import "JSONKit.h"
 #import "ACHTTPAdditions.h"
 #import "XMLReader.h"
+#import "RegexKitLite.h"
 
 static int _networkActivity = 0;
 
@@ -25,7 +26,7 @@ static int _networkActivity = 0;
 
 @implementation ACHTTPRequest
 
-@synthesize action, response, result, body, payload, url, receivedData, delegate, username, password, method, connection = conn, modifiers, contentType;
+@synthesize action, response, result, body, payload, url, receivedData, delegate, username, password, method, connection = conn, modifiers, contentType, cacheless;
 
 #pragma mark - Initialization
 
@@ -101,27 +102,28 @@ static int _networkActivity = 0;
 		self.url = [(NSURLRequest*)value URL];
 	}
 	[newUrl release];
+
 	
 	// Make sure the network is available
+/*
 	if([[ACHTTPReachability reachabilityForInternetConnection] currentReachabilityStatus] == NotReachable) {
 		NSError* error = [NSError errorWithDomain:@"ACHTTPRequest" code:400 userInfo:[NSDictionary dictionaryWithObject:@"The network is not available" forKey:NSLocalizedDescriptionKey]];
 		[self handleError: error];
 		return;
-	} else {
-		// Make sure we can reach the host
-		if([[ACHTTPReachability reachabilityWithHostName:url.host] currentReachabilityStatus] == NotReachable) {
-			NSError* error = [NSError errorWithDomain:@"ACHTTPRequest" code:410 userInfo:[NSDictionary dictionaryWithObject:@"The host is not available" forKey:NSLocalizedDescriptionKey]];
-			[self handleError: error];
-			return;
-		}
 	}
+	if([[ACHTTPReachability reachabilityWithHostName:url.host] currentReachabilityStatus] == NotReachable) {
+		NSError* error = [NSError errorWithDomain:@"ACHTTPRequest" code:410 userInfo:[NSDictionary dictionaryWithObject:@"The host is not available" forKey:NSLocalizedDescriptionKey]];
+		[self handleError: error];
+		return;
+	}
+*/
 
 	// Create the request
 	NSMutableURLRequest* request = nil;
 	if([value isKindOfClass:[NSURLRequest class]]) {
 		request = value;
 	} else {
-		request = [NSMutableURLRequest requestWithURL:self.url cachePolicy:NSURLRequestReturnCacheDataElseLoad timeoutInterval:30];
+		request = [NSMutableURLRequest requestWithURL:self.url cachePolicy:(self.cacheless) ? NSURLRequestReloadIgnoringCacheData : NSURLRequestReturnCacheDataElseLoad timeoutInterval:30];
 	
 		// Determine the method of the request
 		NSString* httpMethod = @"GET";
@@ -138,6 +140,8 @@ static int _networkActivity = 0;
 				httpMethod = @"DELETE"; break;
 			case ACHTTPRequestMethodTrace:
 				httpMethod = @"TRACE"; break;
+			case ACHTTPRequestMethodCreate:
+				httpMethod = @"CREATE"; break;
 			default:
 				if(self.body != nil) {
 					httpMethod = @"POST";
@@ -327,7 +331,7 @@ static int _networkActivity = 0;
 	id output = nil;
 	
 	if([mimetype hasPrefix:@"text/"] || [mimetype isEqualToString:@"application/json"]) {
-		r = [[[NSString alloc] initWithData: data encoding: NSUTF8StringEncoding] autorelease];
+		r = [self contentsFromData:data];
 	}
 	
 	if([r rangeOfString:@"http://www.apple.com/DTDs/PropertyList-1.0.dtd"].length > 0) {
@@ -429,66 +433,66 @@ static int _networkActivity = 0;
 	return [ACHTTPRequest resultsWithData:resultData usingMimeType:[response MIMEType]];
 }
 
-+(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate {
++(ACHTTPRequest*)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate {
 	return [self get:url delegate:delegate modifiers:nil];
 }
 
-+(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers {
++(ACHTTPRequest*)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
 	wd.modifiers = modifiers;
 	[wd getUrl:url];
-	[wd release];
+	return [wd autorelease];
 }
 
-+(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate action:(SEL)action {
++(ACHTTPRequest*)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate action:(SEL)action {
 	return [self get:url delegate:delegate action:action modifiers:nil];
 }
 
-+(void)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate action:(SEL)action modifiers:(NSArray*)modifiers {
++(ACHTTPRequest*)get:(id)url delegate: (id<ACHTTPRequestDelegate>) delegate action:(SEL)action modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
 	wd.action = action;
 	wd.modifiers = modifiers;
 	[wd getUrl:url];
-	[wd release];
+	return [wd autorelease];
 }
 
-+(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate {
-	[self post:url data:data delegate:delegate modifiers:nil];
++(ACHTTPRequest*)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate {
+	return [self post:url data:data delegate:delegate modifiers:nil];
 }
 
-+(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate:(id <ACHTTPRequestDelegate>)delegate {
++(ACHTTPRequest*)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)contentType delegate:(id <ACHTTPRequestDelegate>)delegate {
 	return [self post:url data:data contentType:contentType delegate:delegate modifiers:nil];
 }
 
-+(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate modifiers:(NSArray*)modifiers {
++(ACHTTPRequest*)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate modifiers:(NSArray*)modifiers {
 	return [self post:url data:data contentType:ACHTTPPostFormURLEncoded delegate:delegate modifiers:modifiers];
 }
 
-+(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)_contentType delegate:(id <ACHTTPRequestDelegate>)delegate modifiers:(NSArray*)modifiers {
++(ACHTTPRequest*)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)_contentType delegate:(id <ACHTTPRequestDelegate>)delegate modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
 	wd.body = data;
 	wd.modifiers = modifiers;
 	wd.contentType = _contentType;
 	[wd getUrl:url];
-	[wd release];
+	return [wd autorelease];
 }
 
-+(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action {
++(ACHTTPRequest*)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action {
 	return [self post:url data:data delegate:delegate action:action modifiers:nil];
 }
 
-+(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)_contentType delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action {
++(ACHTTPRequest*)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)_contentType delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action {
 	return [self post:url data:data contentType:_contentType delegate:delegate action:action modifiers:nil];
 }
 
-+(void)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action modifiers:(NSArray*)modifiers {
++(ACHTTPRequest*)post:(id)url data:(id)data delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action modifiers:(NSArray*)modifiers {
 	return [self post:url data:data contentType:ACHTTPPostFormURLEncoded delegate:delegate action:action modifiers:modifiers];
 }
 
-+(void)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)_contentType delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action modifiers:(NSArray*)modifiers {
++(ACHTTPRequest*)post:(id)url data:(id)data contentType:(ACHTTPPostContentType)_contentType delegate:(id <ACHTTPRequestDelegate>)delegate action:(SEL)action modifiers:(NSArray*)modifiers {
 	ACHTTPRequest* wd = [[ACHTTPRequest alloc] init];
 	wd.delegate = delegate;
 	wd.action = action;
@@ -497,7 +501,7 @@ static int _networkActivity = 0;
 	wd.body = data;
 	wd.contentType = _contentType;
 	[wd getUrl:url];
-	[wd release];
+	return [wd autorelease];
 }
 
 // Cancels the HTTP request.
@@ -508,6 +512,10 @@ static int _networkActivity = 0;
 }
 
 #pragma mark - Conversion Methods
+
++(NSString*)encodeString:(NSString*)string withEncoding:(NSStringEncoding)encoding {
+	return [(NSString *) CFURLCreateStringByAddingPercentEscapes(NULL, (CFStringRef)string, NULL, (CFStringRef)@";/?:@&=$+{}<>,", CFStringConvertNSStringEncodingToEncoding(encoding)) autorelease];
+}
 
 +(NSString*)convertDictionaryToXML:(NSDictionary*)d {
 	return [d xmlDocument];
@@ -526,14 +534,14 @@ static int _networkActivity = 0;
 }
 
 +(NSString*)convertDictionaryToURLEncoded:(NSDictionary*)d separator:(NSString*)separator {
-	if(separator == nil) { separator = @"."; }
+//	if(separator == nil) { separator = @"."; }
 	NSMutableString* s = [NSMutableString string];
 	for(id key in [d allKeys]) {
 		NSString* value = [NSString stringWithFormat:@"%@", [d objectForKey:key]];
 		if(s.length > 0) {
 			[s appendString:@"&"];
 		}
-		[s appendFormat:@"%@=%@", [key stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding], [value stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
+		[s appendFormat:@"%@=%@", [self encodeString:key withEncoding:NSUTF8StringEncoding], [self encodeString:value withEncoding:NSUTF8StringEncoding]];
 	}
 	return s;
 }
@@ -548,6 +556,85 @@ static int _networkActivity = 0;
 	[newUrl appendString:queryString];
 	return [NSURL URLWithString:newUrl];
 }
+
++(NSString*)contentsFromData:(NSData*)data {
+	
+	// Set up the encoding
+	NSString* contents = nil;
+	NSString* encodingString = nil;
+	NSStringEncoding encoding = 0;
+	
+	// Attempt to detect via XML header
+	NSString* text = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
+	NSArray* matches = [text arrayOfCaptureComponentsMatchedByRegex:@"(?<=encoding=\")(.+?)(?=\")"];
+	if (matches.count > 0) {
+		NSString* o = [[[matches objectAtIndex:0] objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+		if(o.length != 0) {
+			encodingString = o;
+		}
+	}
+	
+	// Use a default encoding if it's set
+	if(encodingString == nil) {
+		encodingString = [[NSUserDefaults standardUserDefaults] objectForKey:@"defaultEncoding"];
+	}
+	
+	// If we know the encoding, let's use it
+	if(encodingString != nil) {
+		encodingString = [encodingString uppercaseString];
+		
+		// Auto detect the encoding
+		if([encodingString isEqualToString:@"AUTO"]) {
+			contents = nil;
+		} else {
+			// UTF-8
+			if([encodingString isEqualToString:@"UTF-8"]) {
+				encoding = NSUTF8StringEncoding;
+			}
+			// ASCII
+			else if([encodingString isEqualToString:@"US-ASCII"]) {
+				encoding = NSASCIIStringEncoding;
+			}
+			// UTF-16
+			else if([encodingString isEqualToString:@"UTF-16"]) {
+				encoding = NSUTF16StringEncoding;
+			}
+			// UTF-32
+			else if([encodingString isEqualToString:@"UTF-32"]) {
+				encoding = NSUTF32StringEncoding;
+			}
+			// ISO Latin
+			else if([encodingString hasPrefix:@"ISO-8859"]) {
+				encoding = NSISOLatin1StringEncoding;
+			}
+			
+			// Return if we have something
+			contents = [[[NSString alloc] initWithData:data encoding:encoding] autorelease];
+		}
+	}
+	
+	// Return the contents if we have some
+	if(contents != nil) { return contents; }
+	
+	// Otherwise, detect the encoding
+	contents = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
+	if(contents != nil) { return contents; }
+	
+	contents = [[[NSString alloc] initWithData:data encoding:NSISOLatin1StringEncoding] autorelease];
+	if(contents != nil) { return contents; }
+	
+	contents = [[[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding] autorelease];
+	if(contents != nil) { return contents; }
+	
+	contents = [[[NSString alloc] initWithData:data encoding:NSUTF16StringEncoding] autorelease];
+	if(contents != nil) { return contents; }
+	
+	contents = [[[NSString alloc] initWithData:data encoding:NSUTF32StringEncoding] autorelease];
+	if(contents != nil) { return contents; }
+	
+	return contents;
+}
+
 
 -(void)dealloc{
 	[body release];
@@ -565,3 +652,4 @@ static int _networkActivity = 0;
 }
 
 @end
+

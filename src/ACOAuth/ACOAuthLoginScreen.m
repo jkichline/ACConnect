@@ -79,6 +79,14 @@
     return YES;
 }
 
+-(BOOL)shouldAutorotate {
+	return YES;
+}
+
+-(UIInterfaceOrientationMask)supportedInterfaceOrientations {
+	return UIInterfaceOrientationMaskAll;
+}
+
 #pragma mark -
 #pragma mark Toolbar Methods
 

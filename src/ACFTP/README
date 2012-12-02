@@ -1,1 +1,0 @@
-ACFTP provides a Cocoa wrapper around `CFFTPStream`, for downloading, uploading, and deleting files, plus making directories & listing them.

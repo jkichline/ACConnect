@@ -92,7 +92,7 @@
 			break;
 			
 		case 552:
-			message = NSLocalizedString(@"Requested file action aborted, storag", @"");
+			message = NSLocalizedString(@"Requested file action aborted, storage allocation exceeded", @"");
 			break;
 		default:
 			break;

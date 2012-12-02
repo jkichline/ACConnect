@@ -34,6 +34,8 @@ typedef enum {
 	NSString* javascript;
 	
 	BOOL authenticateImmediately;
+	BOOL authorizeExternally;
+	BOOL useAuthorizationHeader;
 	NSMutableDictionary* parameters;
 	
 	UIColor* tintColor;
@@ -43,6 +45,7 @@ typedef enum {
 	ACKeychain* keychain;
 }
 
+@property (readonly) BOOL isAuthenticated;
 @property (nonatomic, retain) NSURL* baseURL;
 @property (nonatomic, retain) NSURL* requestTokenURL;
 @property (nonatomic, retain) NSString* requestTokenMethod;
@@ -52,6 +55,8 @@ typedef enum {
 @property (nonatomic, retain) NSString* authorizationMethod;
 @property (nonatomic, retain) NSURL* callbackURL;
 @property (nonatomic) BOOL authenticateImmediately;
+@property (nonatomic) BOOL authorizeExternally;
+@property (nonatomic) BOOL useAuthorizationHeader;
 @property (nonatomic, retain) NSString* consumerKey;
 @property (nonatomic, retain) NSString* consumerSecret;
 @property (nonatomic, retain) NSString* token;
