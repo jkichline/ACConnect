@@ -8,14 +8,20 @@
 
 #import "ACWebDAVItem.h"
 #import "ACWebDAV.h"
+#import "ISO8601DateFormatter.h"
+#import "NSDateRFC1123.h"
+
+
+
 
 @implementation ACWebDAVItem
 
 @synthesize type, href, displayName, creationDate, lastModifiedDate, location, delegate, lock;
 
--(id)initWithDictionary:(NSDictionary*)d {
-	if((self = [super init])) {
-		
+-(id)initWithDictionary:(NSDictionary*)d
+{
+	if((self = [super init]))
+    {
 		// Set the type
 		if([[d objectForKey:@"resourcetype"] isEqualToString:@"collection"]) {
 			type = ACWebDAVItemTypeCollection;
@@ -26,25 +32,39 @@
 		// Set the href
 		href = [[d objectForKey:@"href"] retain];
 		
-		static NSDateFormatter* dateFormatter;
-		if(dateFormatter == nil) {
-			dateFormatter = [[NSDateFormatter alloc] init];
-			[dateFormatter setDateFormat:@"EEE, dd MMM yyyy HH:mm:ss Z"];
-		}
-		
-		// Set the creation date
-		if([d objectForKey:@"creationdate"] != nil) {
-			creationDate = [[dateFormatter dateFromString:[d objectForKey:@"creationdate"]] retain];
-		}
-		
-		// Set the last modified date
-		if([d objectForKey:@"getlastmodified"] != nil) {
-			lastModifiedDate = [[dateFormatter dateFromString:[d objectForKey:@"getlastmodified"]] retain];
-		}
-		
-		// Set the display name
+        // Set the display name
 		displayName = [[d objectForKey:@"displayname"] retain];
-		
+        
+        
+        
+        //===============================
+        //        Date Setting
+        //===============================
+		// Set the creation date
+        NSString *createDateStr = [d objectForKey:@"creationdate"];
+        NSString *modifyDateStr = [d objectForKey:@"getlastmodified"];
+        
+		if(createDateStr != nil)
+        {
+            ISO8601DateFormatter *formatter = [[ISO8601DateFormatter alloc] init];
+			creationDate = [formatter dateFromString:createDateStr];
+            [formatter release];
+            
+            //change the GMT Date to localDate
+            NSTimeZone *zone = [NSTimeZone systemTimeZone];
+            NSInteger timeInterval = [zone secondsFromGMTForDate:creationDate];
+            creationDate = [[creationDate  dateByAddingTimeInterval: timeInterval] retain];
+		}
+		// Set the last modified date
+		if(modifyDateStr != nil)
+        {
+			lastModifiedDate = [NSDate dateFromRFC1123:modifyDateStr];
+            
+            //change the GMT Date to localDate
+            NSTimeZone *zone = [NSTimeZone systemTimeZone];
+            NSInteger timeInterval = [zone secondsFromGMTForDate:lastModifiedDate];
+            lastModifiedDate = [[lastModifiedDate  dateByAddingTimeInterval: timeInterval] retain];
+		}
 	}
 	return self;
 }
@@ -125,6 +145,20 @@
 	if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(ACWebDAVItem:didReceiveProperties:)]) {
 		[self.delegate ACWebDAVItem:self didReceiveProperties:[properties objectAtIndex:0]];
 	}
+}
+-(NSString *)description
+{
+	NSString *typeStr = (self.type==ACWebDAVItemTypeCollection)?@"Collection":@"File";
+	return [NSString stringWithFormat:@"=====item=====\n{\ttype:%@\n\tdisplayName:%@\n\thref:%@\n\tabsoluteHref:%@\n\tparentHref:%@\n\tabsoluteParentHref:%@\n\tcreationDate:%@\n\tlastModifiedDate:%@\n\turl:%@\n}",
+            typeStr,
+			self.displayName,
+			self.href,
+			self.absoluteHref,
+			self.parentHref,
+			self.absoluteParentHref,
+			self.creationDate,
+            self.lastModifiedDate,
+            self.url];
 }
 
 -(void)dealloc {

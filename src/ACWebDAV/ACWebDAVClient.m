@@ -42,6 +42,10 @@
 	return [self clientWithHost:[@"http://idisk.mac.com/" stringByAppendingString:_username] username:_username password:_password];
 }
 
+
+
+
+
 #pragma mark -
 #pragma mark Properties
 
@@ -56,6 +60,11 @@
 		host = value;
 	}
 }
+
+
+
+
+
 
 #pragma mark -
 #pragma mark Client Methods
@@ -112,7 +121,7 @@
 -(void)copyFrom:(NSString*)fromHref toPath:(NSString*)toHref overwrite:(BOOL)overwrite {
 	ACWebDAVLocation* location = [ACWebDAVLocation locationWithHost:self.host href:fromHref username:self.username password:self.password];
 	ACWebDAVLocation* destination = [ACWebDAVLocation locationWithHost:self.host href:toHref username:self.username password:self.password];
-	ACWebDAVCopyRequest* request = [ACWebDAVCopyRequest requestToCopyItem:[ACWebDAVItem itemWithLocation:location] toLocation:destination delegate:self];
+	ACWebDAVCopyRequest* request = [ACWebDAVCopyRequest requestToCopyItem:[ACWebDAVItem itemWithLocation:location] toLocation:destination overWrite:NO delegate:self];
 	[request start];
 }
 
@@ -123,7 +132,7 @@
 -(void)moveFrom:(NSString*)fromHref toPath:(NSString*)toHref overwrite:(BOOL)overwrite {
 	ACWebDAVLocation* location = [ACWebDAVLocation locationWithHost:self.host href:fromHref username:self.username password:self.password];
 	ACWebDAVLocation* destination = [ACWebDAVLocation locationWithHost:self.host href:toHref username:self.username password:self.password];
-	ACWebDAVMoveRequest* request = [ACWebDAVMoveRequest requestToMoveItem:[ACWebDAVItem itemWithLocation:location] toLocation:destination delegate:self];
+	ACWebDAVMoveRequest* request = [ACWebDAVMoveRequest requestToMoveItem:[ACWebDAVItem itemWithLocation:location] toLocation:destination overWrite:NO delegate:self];
 	[request start];
 }
 
@@ -142,23 +151,56 @@
 	[request start];
 }
 
+
+
+
+
+
+
 #pragma mark -
 #pragma mark Delegate Handlers
 
--(void)request:(ACWebDAVPropertyRequest*)request didReturnItems:(NSArray*)items {
-	if([self.delegate respondsToSelector:@selector(client:loadedMetadata:)]) {
+
+#pragma mark -  List Request Methods
+-(void)request:(ACWebDAVPropertyRequest*)request didReturnItems:(NSArray*)items
+{
+    NSLog(@"============= didReturnItems ===============");
+	if([self.delegate respondsToSelector:@selector(client:loadedMetadata:)])
+    {
 		if(items == nil || items.count < 1) {
 			[self.delegate client:self loadedMetadata:nil];
-		} else {
-			[self.delegate client:self loadedMetadata:[items objectAtIndex:0]];
+		}
+        else
+        {
+			[self.delegate client:self loadedMetadata:items];
 		}
 	}
 }
 
--(void)request:(ACWebDAVDownloadRequest*)request didUpdateDownloadProgress:(float)percent {
-	if([self.delegate respondsToSelector:@selector(client:downloadProgress:forFile:)]) {
-		[self.delegate client:self downloadProgress:percent forFile:[request.userInfo objectForKey:@"destinationPath"]];
-	}
+-(void)request:(ACWebDAVDownloadRequest*)request didUpdateDownloadProgress:(float)percent
+{
+    if([self.delegate respondsToSelector:@selector(needToCancelDownload)])
+    {
+        BOOL cancel = [self.delegate needToCancelDownload];
+        if (cancel==NO)
+        {
+            if([self.delegate respondsToSelector:@selector(client:downloadProgress:forFile:)])
+            {
+                [self.delegate client:self downloadProgress:percent
+                              forFile:[request.userInfo objectForKey:@"destinationPath"]];
+            }
+        }
+        else
+        {
+            [request cancel];
+            if ([self.delegate respondsToSelector:@selector(resetCancelDownload:)])
+            {
+                [self.delegate resetCancelDownload:NO];
+            }
+        }
+    }
+        
+    
 }
 
 -(void)request:(ACWebDAVDownloadRequest*)request didCompleteDownload:(NSData*)data {
@@ -168,7 +210,14 @@
 			[self.delegate client:self downloadedFileData:data];
 		}
 	} else {
-		[data writeToFile:path atomically:YES];
+		if ([data writeToFile:path atomically:YES])
+        {
+            NSLog(@"write to file:%@ Success",path);
+        }
+        else
+        {
+            NSLog(@"write to file:%@ Failed",path);
+        }
 		if([self.delegate respondsToSelector:@selector(client:downloadedFile:)]) {
 			[self.delegate client:self downloadedFile:path];
 		}
