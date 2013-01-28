@@ -71,11 +71,15 @@
 @protocol ACWebDAVClientDelegate <NSObject>
 
 @optional
+- (BOOL)needToCancelDownload;
+- (void)resetCancelDownload:(BOOL)cancel;
+- (BOOL)needToCancelUpload;
+- (void)resetCancelUpload:(BOOL)cancel;
 
 - (void)client:(ACWebDAVClient*)client failedWithError:(NSError*)error;
 - (void)client:(ACWebDAVClient*)client failedWithErrorCode:(int)errorCode;
 
-- (void)client:(ACWebDAVClient*)client loadedMetadata:(ACWebDAVItem*)item;
+- (void)client:(ACWebDAVClient*)client loadedMetadata:(NSArray *)items;
 - (void)client:(ACWebDAVClient*)client loadMetadataFailedWithError:(NSError*)error;
 - (void)client:(ACWebDAVClient*)client loadMetadataFailedWithErrorCode:(int)errorCode;
 
