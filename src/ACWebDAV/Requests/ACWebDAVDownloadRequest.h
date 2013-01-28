@@ -36,8 +36,10 @@
 @property (nonatomic, retain) id<ACWebDAVDownloadRequestDelegate> delegate;
 @property (nonatomic, retain) ACWebDAVLocation* location;
 @property (nonatomic, retain) NSDictionary* userInfo;
+@property (nonatomic, retain) NSURLConnection* currentConnection;//new
 
 -(void)start;
+-(void)cancel;
 +(ACWebDAVDownloadRequest*)requestToDownloadItem:(ACWebDAVItem*)item delegate:(id<ACWebDAVDownloadRequestDelegate>) delegate;
 
 @end

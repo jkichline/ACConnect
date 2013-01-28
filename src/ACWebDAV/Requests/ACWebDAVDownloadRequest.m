@@ -11,7 +11,7 @@
 
 @implementation ACWebDAVDownloadRequest
 
-@synthesize delegate, location, userInfo;
+@synthesize delegate, location, userInfo,currentConnection;
 
 -(id)initWithLocation:(ACWebDAVLocation*)_location {
 	if(self = [self init]) {
@@ -34,7 +34,21 @@
 	[UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
 	NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:self.location.url];
 	NSURLConnection* conn = [[NSURLConnection alloc] initWithRequest:request delegate:self];
+    if (self.currentConnection!=nil)
+    {
+        self.currentConnection = nil;
+    }
+    self.currentConnection = conn;
 	[conn start];
+}
+
+//new
+-(void)cancel
+{
+	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+    [self.currentConnection cancel];
+    [self.currentConnection release];
+    NSLog(@"canceled");
 }
 
 -(NSURLRequest*)connection:(NSURLConnection*)connection willSendRequest:(NSURLRequest*)request redirectResponse:(NSURLResponse*)redirectResponse {
@@ -72,7 +86,8 @@
 	}
 }
 
--(void)connection:(NSURLConnection*)connection didReceiveData:(NSData*)d {
+-(void)connection:(NSURLConnection*)connection didReceiveData:(NSData*)d
+{
     [data appendData:d];
 	if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(request:didUpdateDownloadProgress:)]) {
 		[self.delegate request:self didUpdateDownloadProgress:(float)data.length/contentLength];
@@ -96,6 +111,7 @@
 }
 
 -(void)dealloc {
+    [currentConnection release];//new
 	[userInfo release];
 	[location release];
 	[(NSObject*)delegate release];

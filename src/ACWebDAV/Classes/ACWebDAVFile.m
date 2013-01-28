@@ -25,6 +25,23 @@
 	return self;
 }
 
+-(NSString *)description
+{
+    NSString *typeStr = (self.type==ACWebDAVItemTypeCollection)?@"Collection":@"File";
+	return [NSString stringWithFormat:@"\n=====item=====\n{\ttype:%@\n\tdisplayName:%@\n\thref:%@\n\tabsoluteHref:%@\n\tparentHref:%@\n\tabsoluteParentHref:%@\n\tcreationDate:%@\n\tlastModifiedDate:%@\n\turl:%@\n\tcontentType:%@\n\tcontentLength:%lld\n}",
+            typeStr,
+			self.displayName,
+			self.href,
+			self.absoluteHref,
+			self.parentHref,
+			self.absoluteParentHref,
+			self.creationDate,
+            self.lastModifiedDate,
+            self.url,
+            self.contentType,
+            self.contentLength];
+}
+
 -(void)dealloc {
 	[contentType release];
 	[super dealloc];

@@ -54,7 +54,7 @@
 }
 
 - (void)connection:(NSURLConnection*)connection didReceiveResponse:(NSHTTPURLResponse*)response {
-	if([response statusCode] == 201) {
+	if([response statusCode] == 201||[response statusCode]==204) {
 		if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(request:didDeleteItem:)]) {
 			ACWebDAVLocation* newLocation = [ACWebDAVLocation locationWithURL:[response URL] username:self.location.username password:self.location.password];
 			ACWebDAVItem* item = [[ACWebDAVItem alloc] initWithLocation:newLocation];
