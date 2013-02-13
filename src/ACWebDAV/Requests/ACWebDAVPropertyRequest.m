@@ -162,7 +162,7 @@
 			for(CXMLNode* child in [response children]) {
 				if([[child localName] isEqualToString:@"href"]) {
 					[d setObject:[child stringValue] forKey:@"href"];
-				} else if([[child name] isEqualToString:@"propstat"]) {
+				} else if([[child localName] isEqualToString:@"propstat"]) {
 					for(CXMLNode* propstat in [child children]) {
 						if([[propstat localName] isEqualToString:@"prop"]) {
 							for(CXMLNode* prop in [propstat children]) {
