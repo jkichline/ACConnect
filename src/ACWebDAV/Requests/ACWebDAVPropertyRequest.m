@@ -244,6 +244,10 @@
 
 -(void)connection:(NSURLConnection*)connection didFailWithError:(NSError*)error {
 	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
+	if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(request:didFailWithError:)]) {
+		[self.delegate request:self didFailWithError:error];
+	}
+    
 	[connection release];
 }
 

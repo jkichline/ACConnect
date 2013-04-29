@@ -17,7 +17,7 @@
 #pragma mark -
 #pragma mark Application lifecycle
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {    
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     // Override point for customization after application launch.
 	ACSugarSyncClient* client = [ACSugarSyncClient clientWithUsername:@"jkichline@gmail.com" password:@"spoon!08" accessKey:@"MTY0OTE1ODEzMTM1MzU1NTYxNjg" privateAccessKey:@"MmFhYzljN2RlOGQ0NDA5YWE1NDNlYTA0Yzk2MDk5N2Q"];
@@ -52,8 +52,8 @@
 				ACSugarSyncFile* file = (ACSugarSyncFile*)item;
 				NSLog(@"File: %@ - %d bytes", file, file.size);
 				if(file.size > 0) {
-//					[file downloadFile];
-//					break;
+                    //					[file downloadFile];
+                    //					break;
 				}
 			}
 		}

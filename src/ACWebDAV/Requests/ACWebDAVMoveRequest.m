@@ -62,19 +62,18 @@
 
 - (void)connection:(NSURLConnection*)connection didReceiveResponse:(NSHTTPURLResponse*)response {
 	if([response statusCode] == 201) {
-		if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(ACWebDAVMoveRequest:didMoveItem:)]) {
+		if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(request:didMoveItem:)]) {
 			ACWebDAVLocation* newLocation = [ACWebDAVLocation locationWithURL:[response URL] username:self.location.username password:self.location.password];
 			ACWebDAVItem* item = [[ACWebDAVItem alloc] initWithLocation:newLocation];
 			[self.delegate request:self didMoveItem:item];
 			[item release];
 		}
 	} else {
-		if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(ACWebDAVMoveRequest:didFailWithErrorCode:)]) {
+		if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(request:didFailWithErrorCode:)]) {
 			[self.delegate request:self didFailWithErrorCode:[response statusCode]];
 		}
 	}
 }
-
 -(void)connectionDidFinishLoading:(NSURLConnection *)connection {
 	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
 	[connection release];
@@ -82,7 +81,7 @@
 
 -(void)connection:(NSURLConnection*)connection didFailWithError:(NSError*)error {
 	[UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-	if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(ACWebDAVMoveRequest:didFailWithError:)]) {
+	if(self.delegate != nil && [(NSObject*)self.delegate respondsToSelector:@selector(request:didFailWithError:)]) {
 		[self.delegate request:self didFailWithError:error];
 	}
 	[connection release];
