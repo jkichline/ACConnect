@@ -8,7 +8,7 @@
 
 #import "AppDelegate_iPad.h"
 #import "ACSugarSync.h"
-#import "ACWebDAVClient.h"
+
 @implementation AppDelegate_iPad
 
 @synthesize window;
@@ -17,16 +17,14 @@
 #pragma mark -
 #pragma mark Application lifecycle
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {    
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     // Override point for customization after application launch.
-//	ACSugarSyncClient* client = [ACSugarSyncClient clientWithUsername:@"jkichline@gmail.com" password:@"spoon!08" accessKey:@"MTY0OTE1ODEzMTM1MzU1NTYxNjg" privateAccessKey:@"MmFhYzljN2RlOGQ0NDA5YWE1NDNlYTA0Yzk2MDk5N2Q"];
-//	[client authorize:self selector:@selector(authorized:)];
+	ACSugarSyncClient* client = [ACSugarSyncClient clientWithUsername:@"jkichline@gmail.com" password:@"spoon!08" accessKey:@"MTY0OTE1ODEzMTM1MzU1NTYxNjg" privateAccessKey:@"MmFhYzljN2RlOGQ0NDA5YWE1NDNlYTA0Yzk2MDk5N2Q"];
+	[client authorize:self selector:@selector(authorized:)];
 	
-    ACWebDAVClient *client1 = [ACWebDAVClient clientWithHost:@"http://192.168.137.17:8888/owncloud/remote.php/webdav" username:@"fangzhzh" password:@"fangzhzh"];
-    [client1 loadMetadata:@"/"];
-//	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleAuthorization:) name:ACSugarSyncAuthorizationCompleteNotification object:client];
-//	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRetrieveUser:) name:ACSugarSyncRetrievedUserNotification object:client];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleAuthorization:) name:ACSugarSyncAuthorizationCompleteNotification object:client];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRetrieveUser:) name:ACSugarSyncRetrievedUserNotification object:client];
     [self.window makeKeyAndVisible];
     
     return YES;
@@ -54,8 +52,8 @@
 				ACSugarSyncFile* file = (ACSugarSyncFile*)item;
 				NSLog(@"File: %@ - %d bytes", file, file.size);
 				if(file.size > 0) {
-//					[file downloadFile];
-//					break;
+                    //					[file downloadFile];
+                    //					break;
 				}
 			}
 		}
